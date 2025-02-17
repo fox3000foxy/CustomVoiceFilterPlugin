@@ -5,12 +5,14 @@
  */
 
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { findByProps } from "@webpack";
 import { Button, Flex, Forms, Select, TextInput, useMemo, useState } from "@webpack/common";
 import { SelectOption } from "@webpack/types";
 import { JSX } from "react";
 
 import { voices } from ".";
 import { openErrorModal } from "./ErrorModal";
+import { IVoiceFilter, useVoiceFiltersStore } from "./index";
 const requiredFields = ["name", "iconUrl", "voicepackUrl", "previewSoundUrl"];
 
 interface CreateVoiceFilterModalProps {
@@ -76,6 +78,20 @@ function CreateVoiceFilterModal({ modalProps, close }: CreateVoiceFilterModalPro
                     <Button color={Button.Colors.TRANSPARENT} onClick={close} >Cancel</Button>
                     <Button color={Button.Colors.GREEN} onClick={() => {
                         if (requiredFields.every(field => field)) {
+                            useVoiceFiltersStore.getState().downloadVoice(JSON.stringify({
+                                id: findByProps("getCurrentUser").getCurrentUser().id + "-" + name.toLowerCase().replace(/ /g, "-"),
+                                author: findByProps("getCurrentUser").getCurrentUser().id,
+                                name,
+                                iconURL: iconUrl,
+                                styleKey,
+                                onnxFileUrl: voicepackUrl,
+                                previewSoundURLs: [previewSoundUrl],
+                                available: true,
+                                temporarilyAvailable: false,
+                                custom: true,
+                                splashGradient: "radial-gradient(circle, #d9a5a2 0%, rgba(0,0,0,0) 100%)",
+                                baseColor: "#d9a5a2",
+                            } satisfies IVoiceFilter));
                             close();
                         } else {
                             openErrorModal("Please fill in all required fields");
