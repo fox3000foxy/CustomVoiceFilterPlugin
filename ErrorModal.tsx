@@ -30,17 +30,17 @@ interface ErrorModalProps {
 export function ErrorModal({ modalProps, close, message }: ErrorModalProps): JSX.Element {
     return (
         <ModalRoot {...modalProps} size={ModalSize.SMALL}>
-            <ModalHeader className="modalHeader">
+            <ModalHeader separator={false}>
                 <Forms.FormTitle tag="h2" className="modalTitle">
                     Error
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
-            <ModalContent style={{ color: "white" }}>
-                <br /><Text>{message}</Text><br />
+            <ModalContent style={{ paddingBlock: "0.5rem" }}>
+                <Text>{message}</Text>
             </ModalContent>
-            <ModalFooter justify="END">
-                <Button onClick={close} style={{ alignSelf: "flex-end" }}>Close</Button>
+            <ModalFooter>
+                <Button onClick={close}>Close</Button>
             </ModalFooter>
         </ModalRoot>
     );

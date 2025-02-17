@@ -5,7 +5,7 @@
  */
 
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms, Text } from "@webpack/common";
+import { Button, Flex, Forms, Text } from "@webpack/common";
 import { JSX } from "react";
 
 // Open Confirm Modal
@@ -31,20 +31,20 @@ interface ConfirmModalProps {
 export function ConfirmModal({ modalProps, message, accept, close }: ConfirmModalProps): JSX.Element {
     return (
         <ModalRoot {...modalProps} size={ModalSize.SMALL}>
-            <ModalHeader className="modalHeader">
+            <ModalHeader separator={false}>
                 <Forms.FormTitle tag="h2" className="modalTitle">
                     Confirm
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
-            <ModalContent style={{ color: "white" }}>
-                <br /><Text>{message}</Text><br />
+            <ModalContent style={{ paddingBlock: "0.5rem" }}>
+                <Text>{message}</Text>
             </ModalContent>
-            <ModalFooter justify="END">
-                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-                    <Button color={Button.Colors.RED} onClick={() => { accept(); close(); }} style={{ alignSelf: "flex-end" }}>Accept</Button>
-                    <Button color={Button.Colors.PRIMARY} onClick={() => { close(); }} style={{ alignSelf: "flex-end" }}>Cancel</Button>
-                </div>
+            <ModalFooter>
+                <Flex style={{ gap: "10px" }}>
+                    <Button color={Button.Colors.RED} onClick={() => { accept(); close(); }}>Accept</Button>
+                    <Button color={Button.Colors.PRIMARY} onClick={close}>Cancel</Button>
+                </Flex>
             </ModalFooter>
         </ModalRoot >
     );

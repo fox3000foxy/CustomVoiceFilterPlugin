@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Flex } from "@components/Flex";
-import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms, Text, TextInput, useState } from "@webpack/common";
+import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { Button, Flex, Forms, Text, TextInput, useState } from "@webpack/common";
 import { JSX } from "react";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
@@ -28,8 +27,13 @@ export function openVoiceFiltersModal() {
     return key;
 }
 
+interface VoiceFiltersModalProps {
+    modalProps: ModalProps;
+    close: () => void;
+    accept: () => void;
+}
 
-export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: any; close: () => void; accept: () => void; }): JSX.Element {
+export function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps): JSX.Element {
     const [url, setUrl] = useState("");
     const [defaultVoicepack, setDefaultVoicepack] = useState(false);
     const { downloadVoice, deleteAll, exportVoiceFilters, importVoiceFilters, voiceFilters } = useVoiceFiltersStore();
@@ -41,14 +45,14 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
     return (
         <ModalRoot {...modalProps} size={ModalSize.LARGE}>
             <ModalHeader>
-                <Forms.FormTitle tag="h2">
+                <Forms.FormTitle tag="h2" className="modalTitle">
                     Voice Filters Management Menu
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
-            <ModalContent >
-                <Flex style={{ gap: "1rem" }} flexDirection="column">
-                    <span style={{ color: "white", paddingBottom: "10px" }}>Download a voicepack from a url or paste a voicepack data here:</span>
+            <ModalContent style={{ paddingBlock: "0.5rem" }}>
+                <Flex style={{ gap: "1rem" }} direction={Flex.Direction.VERTICAL}>
+                    <Text>Download a voicepack from a url or paste a voicepack data here:</Text>
                     <TextInput
                         value={url}
                         placeholder="( e.g. https://fox3000foxy.com/voicepacks/agents.json )"
@@ -57,7 +61,7 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
                         style={{ width: "100%" }}
                     />
                     <Flex style={{ gap: "0.5rem" }}>
-                        <Button onClick={() => { downloadVoice(url); }}>Download</Button>
+                        <Button onClick={() => downloadVoice(url)}>Download</Button>
                         <Button onClick={deleteAll} color={Button.Colors.RED}>Delete all</Button>
                         <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
                         <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
@@ -68,16 +72,14 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
                     </Flex>
 
                     <Text>Voices filters list:</Text>
-                    <Flex style={{ gap: "0.5rem", flexWrap: "wrap" }}>
-                        {voiceComponents.length > 0 ? voiceComponents : <i style={{ color: "white" }}>No voice filters found</i>}
+                    <Flex style={{ gap: "0.5rem" }} wrap={Flex.Wrap.WRAP}>
+                        {voiceComponents.length > 0 ? voiceComponents : <Text style={{ fontStyle: "italic" }}>No voice filters found</Text>}
                     </Flex>
                 </Flex>
             </ModalContent>
-            <ModalFooter justify="END">
-                <Flex style={{ gap: "0.5rem", justifyContent: "space-between", alignItems: "center", }}>
-                    <Button color={Button.Colors.TRANSPARENT} onClick={() => {
-                        openHelpModal();
-                    }}>Learn how to build your own voicepack</Button>
+            <ModalFooter>
+                <Flex style={{ gap: "0.5rem" }} justify={Flex.Justify.END} align={Flex.Align.CENTER}>
+                    <Button color={Button.Colors.TRANSPARENT} onClick={openHelpModal}>Learn how to build your own voicepack</Button>
                     <Button color={Button.Colors.TRANSPARENT} onClick={openCreateVoiceModal}>Create Voicepack</Button>
                     <Button color={Button.Colors.RED} onClick={accept}>Close</Button>
                 </Flex>

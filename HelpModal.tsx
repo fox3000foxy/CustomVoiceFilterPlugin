@@ -5,9 +5,8 @@
  */
 
 import { CodeBlock } from "@components/CodeBlock";
-import { Flex } from "@components/Flex";
-import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, openModal } from "@utils/modal";
-import { Button, Forms, Text } from "@webpack/common";
+import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
+import { Button, Flex, Forms, Text } from "@webpack/common";
 import { JSX } from "react";
 
 import { templateVoicepack } from ".";
@@ -24,17 +23,22 @@ export function openHelpModal() {
     return key;
 }
 
-export function HelpModal({ modalProps, close }: { modalProps: any; close: () => void; }): JSX.Element {
+interface HelpModalProps {
+    modalProps: ModalProps;
+    close: () => void;
+}
+
+export function HelpModal({ modalProps, close }: HelpModalProps): JSX.Element {
     return (
-        <ModalRoot {...modalProps} size="large">
-            <ModalHeader className="modalHeader">
+        <ModalRoot {...modalProps} size={ModalSize.LARGE}>
+            <ModalHeader>
                 <Forms.FormTitle tag="h2" className="modalTitle">
                     Help with voicepacks
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
-            <ModalContent style={{ color: "white" }}>
-                <Flex style={{ gap: "1rem" }} flexDirection="column">
+            <ModalContent style={{ paddingBlock: "0.5rem" }}>
+                <Flex style={{ gap: "1rem" }} direction={Flex.Direction.VERTICAL}>
                     <Text>To build your own voicepack, you need to have a voicepack file. You can download one from the template or look at this tutorial.</Text>
                     <Text>The voicepack file is a json file that contains the voicepack data. You can find the template <a onClick={() => {
                         downloadFile("voicepack-template.json", templateVoicepack);
@@ -42,13 +46,11 @@ export function HelpModal({ modalProps, close }: { modalProps: any; close: () =>
                     <Text>Once you have the voicepack file, you can use the <a onClick={openVoiceFiltersModal}>Voice Filters Management Menu</a> to manage your voicepacks.</Text>
                     <Text>A voicepack may have one or multiple voices. Each voice is an object with the following properties:</Text>
                     <CodeBlock lang="json" content={templateVoicepack} />
-                    <i>Style Key must be "" or one of the following: skye, quinn, axel, sebastien, megaphone, robot, tunes, ghost, spacebunny, justus, harper, villain, solara, cave, deepfried</i>
+                    <Text style={{ fontStyle: "italic" }}>Style Key must be "" or one of the following: skye, quinn, axel, sebastien, megaphone, robot, tunes, ghost, spacebunny, justus, harper, villain, solara, cave, deepfried</Text>
                 </Flex>
             </ModalContent>
-            <ModalFooter justify="END">
-                <Flex style={{ gap: "0.5rem", justifyContent: "space-between", alignItems: "center", }}>
-                    <Button onClick={close} style={{ alignSelf: "flex-end" }} color={Button.Colors.TRANSPARENT}>Close</Button>
-                </Flex>
+            <ModalFooter>
+                <Button onClick={close} color={Button.Colors.TRANSPARENT}>Close</Button>
             </ModalFooter>
         </ModalRoot>
     );
