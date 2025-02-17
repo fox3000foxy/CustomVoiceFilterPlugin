@@ -61,8 +61,8 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
                         <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
                     </Flex>
 
-                    <span>Voices filters list:</span>
-                    <Flex style={{ gap: "0.5rem" }}>
+                    <Text>Voices filters list:</Text>
+                    <Flex style={{ gap: "0.5rem", flexWrap: "wrap" }}>
                         {voiceComponents.length > 0 ? voiceComponents : <i>No voice filters found</i>}
                     </Flex>
                 </Flex>
