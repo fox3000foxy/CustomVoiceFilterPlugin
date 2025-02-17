@@ -600,7 +600,10 @@ async function onLoad() {
 export default definePlugin({
     name: "CustomVoiceFilters",
     description: "Custom voice filters for your voice channels",
-    authors: [{ name: "fox3000foxy.new", id: 724847846897221642n }, { name: "davr1", id: 457579346282938368n }],
+    authors: [
+        { name: "fox3000foxy.new", id: 724847846897221642n },
+        { name: "davr1", id: 457579346282938368n },
+    ],
     renderChatBarButton: CustomVoiceFilterChatBarIcon,
     async start() {
         console.log("CustomVoiceFilters started");
