@@ -6,6 +6,7 @@
 
 // Imports
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
+import { DataStore } from "@api/index";
 import { classNameFactory } from "@api/Styles";
 import { CodeBlock } from "@components/CodeBlock";
 import { ModalSize } from "@utils/modal";
@@ -34,18 +35,40 @@ const templateVoicepack = JSON.stringify({
     "id": "724847846897221642-reyna",
     "author": "724847846897221642",
     "onnxFileUrl": "https://cdn.discordapp.com/attachments/1264847846897221642/1264847846897221642/reyna.onnx"
-}, null, 2);
+} satisfies IVoiceFilter, null, 2);
 const STORAGE_KEY = "vencordVoiceFilters";
 
 // Interfaces
 interface IVoiceFilter {
     name: string;
+    author: string;
+    onnxFileUrl: string;
     iconURL: string;
     id: string;
-    key: string;
     styleKey: string;
+    available: boolean;
+    temporarilyAvailable: boolean;
+
     custom?: boolean;
+    splashGradient?: string;
+    baseColor?: string;
+    previewSoundURLs?: string[];
+    downloadUrl?: string;
 }
+
+type IVoiceFilterMap = Record<string, IVoiceFilter>;
+
+// Required fields for validation
+const requiredFields = [
+    "name",
+    "author",
+    "onnxFileUrl",
+    "iconURL",
+    "id",
+    "styleKey",
+    "available",
+    "temporarilyAvailable"
+] as const;
 
 // Custom Voice Filter Icon
 function CustomVoiceFilterIcon({ className }: { className?: string; }) {
@@ -63,8 +86,8 @@ export const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
     const button = (
         <ChatBarButton
             tooltip="Open Custom Voice Filter Modal"
-            onClick={() => {
-                const { openVoiceFiltersModal } = onLoad();
+            onClick={async () => {
+                const { openVoiceFiltersModal } = await onLoad();
                 openVoiceFiltersModal();
             }}
             buttonProps={{
@@ -79,24 +102,24 @@ export const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
 };
 
 // On Load
-function onLoad() {
+async function onLoad() {
     // Vencord modules
     const { Util, Webpack, Components } = Vencord;
-    const { openModal, ModalRoot, ModalContent, ModalFooter, ModalHeader, ModalCloseButton, closeModal, localStorage } = Util;
+    const { openModal, ModalRoot, ModalContent, ModalFooter, ModalHeader, ModalCloseButton, closeModal } = Util;
     const { Button, TextInput, Forms, Switch } = Webpack.Common;
     const { Flex } = Components;
     const { findByProps } = Webpack;
 
     const { useState } = findByProps("useEffect", "useState");
-    let voiceFilterComponents = getVoicesElements();
+    let voiceFilterComponents = await getVoicesElements();
 
 
-    function getStorageData(): Record<string, any> {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    async function getStorageData(): Promise<IVoiceFilterMap> {
+        return await DataStore.get(STORAGE_KEY) || {};
     }
 
-    function setStorageData(data: Record<string, any>): void {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    async function setStorageData(data: IVoiceFilterMap): Promise<void> {
+        await DataStore.set(STORAGE_KEY, data);
     }
 
     // Download Voice
@@ -122,19 +145,7 @@ function onLoad() {
 
             // Handle single voice or array of voices
             const voices = Array.isArray(data) ? data : [data];
-            const voiceFiltersStorage = getStorageData();
-
-            // Required fields for validation
-            const requiredFields = [
-                "name",
-                "author",
-                "onnxFileUrl",
-                "iconURL",
-                "id",
-                "styleKey",
-                "available",
-                "temporarilyAvailable"
-            ] as const;
+            const voiceFiltersStorage = await getStorageData();
 
             // Process each voice
             for (const voice of voices) {
@@ -155,10 +166,10 @@ function onLoad() {
             }
 
             // Save and update UI
-            setStorageData(voiceFiltersStorage);
+            await setStorageData(voiceFiltersStorage);
             closeModal(key as string);
             updateVoicesList();
-            voiceFilterComponents = getVoicesElements();
+            voiceFilterComponents = await getVoicesElements();
             key = openVoiceFiltersModal();
 
         } catch (error) {
@@ -168,10 +179,10 @@ function onLoad() {
 
     // Delete All
     function deleteAll(): void {
-        openConfirmModal("Are you sure you want to delete all voicepacks?", () => {
-            localStorage.removeItem("vencordVoiceFilters");
+        openConfirmModal("Are you sure you want to delete all voicepacks?", async () => {
+            DataStore.del(STORAGE_KEY);
             updateVoicesList();
-            voiceFilterComponents = getVoicesElements();
+            voiceFilterComponents = await getVoicesElements();
             key = openVoiceFiltersModal();
         });
     }
@@ -187,9 +198,9 @@ function onLoad() {
     }
 
     // Export Voice Filters
-    function exportVoiceFilters(): void {
-        const voiceFiltersStorage = getStorageData();
-        const exportData = JSON.stringify(voiceFiltersStorage, null, 2);
+    async function exportVoiceFilters(): Promise<void> {
+        const data = await getStorageData();
+        const exportData = JSON.stringify(data, null, 2);
         const exportFileName = findByProps("getCurrentUser").getCurrentUser().username + "_voice_filters_export.json";
         downloadFile(exportFileName, exportData);
     }
@@ -203,12 +214,12 @@ function onLoad() {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = e => {
+            reader.onload = async e => {
                 try {
                     const data = JSON.parse(e.target?.result as string);
                     setStorageData(data);
                     updateVoicesList();
-                    voiceFilterComponents = getVoicesElements();
+                    voiceFilterComponents = await getVoicesElements();
                     key = openVoiceFiltersModal();
                 } catch (error) {
                     openErrorModal("Invalid voice filters file");
@@ -234,11 +245,11 @@ function onLoad() {
     }
 
     // Get Voices Elements
-    function getVoicesElements(): JSX.Element[] {
+    async function getVoicesElements(): Promise<JSX.Element[]> {
         let voices: IVoiceFilter[] = [];
-        const voiceFiltersStorage = getStorageData();
-        if (voiceFiltersStorage) {
-            const parsedVoiceFilters = voiceFiltersStorage;
+        const data = await getStorageData();
+        if (data) {
+            const parsedVoiceFilters = data;
             for (const v of Object.values(parsedVoiceFilters)) {
                 const voice: IVoiceFilter = v as IVoiceFilter;
                 voice.custom = true;
@@ -266,13 +277,13 @@ function onLoad() {
         openConfirmModal("Are you sure you want to update this voicepack?", async () => {
             console.warn("accepted to update voice filter:", id);
             closeModal(key as string);
-            const voiceFiltersStorage = getStorageData();
+            const voiceFiltersStorage = await getStorageData();
             const { downloadUrl } = voiceFiltersStorage[id];
-            const hash = downloadUrl.includes("?") ? "&" : "?";
+            const hash = downloadUrl?.includes("?") ? "&" : "?";
             downloadVoice(downloadUrl + hash + "v=" + Date.now());
             // cachedVoiceElements = {};
             updateVoicesList();
-            voiceFilterComponents = getVoicesElements();
+            voiceFilterComponents = await getVoicesElements();
             console.warn("voiceComponents:", voiceFilterComponents);
             key = openVoiceFiltersModal();
         });
@@ -281,14 +292,14 @@ function onLoad() {
     // Delete Voice Filter
     function deleteVoiceFilter(id: string): void {
         console.warn("deleting voice filter:", id);
-        openConfirmModal("Are you sure you want to delete this voicepack?", () => {
+        openConfirmModal("Are you sure you want to delete this voicepack?", async () => {
             console.warn("accepted to delete voice filter:", id);
             closeModal(key as string);
-            const data = getStorageData();
+            const data = await getStorageData();
             delete data[id];
-            setStorageData(data);
+            await setStorageData(data);
             updateVoicesList();
-            voiceFilterComponents = getVoicesElements();
+            voiceFilterComponents = await getVoicesElements();
             key = openVoiceFiltersModal();
         });
     }
@@ -542,7 +553,7 @@ function onLoad() {
     // Open Create Voice Filter Modal
 
     // Update Voices List
-    function updateVoicesList() {
+    async function updateVoicesList() {
         const voices = findAll(filters.byProps("skye")).find(m => m.skye?.name);
         const VoiceFilterStore = findByProps("getVoiceFilters");
 
@@ -563,7 +574,7 @@ function onLoad() {
                 voiceFilterState.voiceFilters[++i] = { ...val, id: i, available: true, temporarilyAvailable: false };
         }
 
-        const customVoices = getVoicesElements();
+        const customVoices = await getVoicesElements();
         customVoices.forEach(voice => {
             voiceFilterState.voiceFilters[++i] = { ...voice.props, id: i, available: true, temporarilyAvailable: false, name: "🛠️ " + voice.props.name };
         });
@@ -589,10 +600,10 @@ export default definePlugin({
     description: "Custom voice filters for your voice channels",
     authors: [{ name: "fox3000foxy.new", id: 724847846897221642n }, { name: "davr1", id: 457579346282938368n }],
     renderChatBarButton: CustomVoiceFilterChatBarIcon,
-    start() {
+    async start() {
         console.log("CustomVoiceFilters started");
 
-        const { updateVoicesList } = onLoad();
+        const { updateVoicesList } = await onLoad();
         updateVoicesList();
 
         console.log(Vencord);
