@@ -119,7 +119,7 @@ async function onLoad() {
     }
 
     async function setStorageData(data: IVoiceFilterMap): Promise<void> {
-        await DataStore.set(STORAGE_KEY, data);
+        DataStore.set(STORAGE_KEY, data);
     }
 
     // Download Voice
@@ -260,17 +260,15 @@ async function onLoad() {
         }
         voices = debug ? voices.slice(0, 3) : voices;
 
-        return voices.map(voice => {
-            // if (cachedVoiceElements[voice.id]) {
-            //     return cachedVoiceElements[voice.id];
-            // } else {
+        const storageData = await getStorageData();
+        return voices.map((voiceItem) => {
+            const voice = storageData[voiceItem.id] as IVoiceFilter | undefined;
             const parsedElement = (
-                <VoiceFilter styleKey={voice.styleKey || ""} name={voice.name} iconURL={voice.iconURL} id={voice.id} key={voice.id} />
+                <VoiceFilter id={voiceItem.id} voiceData={voice} />
             );
-            cachedVoiceElements[voice.id] = parsedElement;
+            cachedVoiceElements[voiceItem.id] = parsedElement;
             return parsedElement;
-            // }
-        }) as JSX.Element[];
+        });
     }
 
     // Update Voice Filter
@@ -307,20 +305,25 @@ async function onLoad() {
     }
 
     // Voice Filter
-    function VoiceFilter({ styleKey, name, iconURL, id }: { styleKey: string; name: string; iconURL: string; id: string; }): JSX.Element {
+    function VoiceFilter({ id, voiceData }: { id: string; voiceData: IVoiceFilter | undefined; }): JSX.Element {
         const VoiceFilterStyles = findByProps("skye"); // still 'skye'
-        const voice = getStorageData()[id];
+
+        if (!voiceData) {
+            console.warn("Voice filter not found for id:", id);
+            return <div>Voice filter not found</div>; // Handle the case where the voice is undefined
+        }
+
         return (
-            <div className={`${VoiceFilterStyles.filter} ${VoiceFilterStyles[styleKey]}`}>
+            <div className={`${VoiceFilterStyles.filter} ${VoiceFilterStyles[voiceData.styleKey ?? ""]}`}>
                 <div className={`${VoiceFilterStyles.selector} ${VoiceFilterStyles.selector}`} role="button" tabIndex={0}>
-                    <div onClick={() => playPreview(voice.previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
+                    <div onClick={() => playPreview(voiceData.previewSoundURLs?.[0] ?? "")} className={VoiceFilterStyles.iconTreatmentsWrapper}>
                         <div className={VoiceFilterStyles.profile}>
-                            <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL} draggable="false" />
+                            <img className={VoiceFilterStyles.thumbnail} alt="" src={voiceData.iconURL ?? ""} draggable="false" />
                             <div className={VoiceFilterStyles.insetBorder}></div>
                         </div>
                     </div>
                     <div className={`text-xs/medium_cf4812 ${VoiceFilterStyles.filterName}`}>
-                        {name}
+                        {voiceData.name ?? ""}
                     </div>
                 </div>
                 <div onClick={() => updateVoiceFilter(id)} className={`${VoiceFilterStyles.hoverButtonCircle} ${VoiceFilterStyles.previewButton}`} aria-label="Play a preview of the Skye voice filter" role="button" tabIndex={0}>
@@ -577,8 +580,9 @@ async function onLoad() {
         }
 
         const customVoices = await getVoicesElements();
+        console.warn("customVoices:", customVoices);
         customVoices.forEach(voice => {
-            voiceFilterState.voiceFilters[++i] = { ...voice.props, id: i, available: true, temporarilyAvailable: false, name: "🛠️ " + voice.props.name };
+            voiceFilterState.voiceFilters[++i] = { ...voice.props.voiceData, id: i, available: true, temporarilyAvailable: false, name: "🛠️ " + voice.props.voiceData.name };
         });
 
         voiceFilterState.sortedVoiceFilters = Object.keys(voiceFilterState.voiceFilters);
