@@ -9,6 +9,7 @@ import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, M
 import { Button, Forms, Text, TextInput, useState } from "@webpack/common";
 import { JSX } from "react";
 
+import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
 import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { playPreview } from "./utils";
@@ -29,7 +30,8 @@ export function openVoiceFiltersModal() {
 
 
 export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: any; close: () => void; accept: () => void; }): JSX.Element {
-    const [url, setUrl] = useState("https://fox3000foxy.com/voicepacks/agents.json");
+    const [url, setUrl] = useState("");
+    const [defaultVoicepack, setDefaultVoicepack] = useState(false);
     const { downloadVoice, deleteAll, exportVoiceFilters, importVoiceFilters, voiceFilters } = useVoiceFiltersStore();
 
     const voiceComponents = Object.values(voiceFilters).map(voice =>
@@ -59,6 +61,10 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
                         <Button onClick={deleteAll} color={Button.Colors.RED}>Delete all</Button>
                         <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
                         <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
+                        <Button onClick={() => {
+                            setDefaultVoicepack(true);
+                            downloadVoice("https://fox3000foxy.com/voicepacks/agents.json");
+                        }} color={Button.Colors.TRANSPARENT}>Download Default</Button>
                     </Flex>
 
                     <Text>Voices filters list:</Text>
@@ -72,7 +78,8 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
                     <Button color={Button.Colors.TRANSPARENT} onClick={() => {
                         openHelpModal();
                     }}>Learn how to build your own voicepack</Button>
-                    <Button color={Button.Colors.GREEN} onClick={accept}>Close</Button>
+                    <Button color={Button.Colors.TRANSPARENT} onClick={openCreateVoiceModal}>Create Voicepack</Button>
+                    <Button color={Button.Colors.RED} onClick={accept}>Close</Button>
                 </Flex>
             </ModalFooter >
         </ModalRoot >

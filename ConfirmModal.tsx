@@ -5,7 +5,7 @@
  */
 
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms } from "@webpack/common";
+import { Button, Forms, Text } from "@webpack/common";
 import { JSX } from "react";
 
 // Open Confirm Modal
@@ -38,8 +38,7 @@ export function ConfirmModal({ modalProps, message, accept, close }: ConfirmModa
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
             <ModalContent style={{ color: "white" }}>
-                <br /><br />
-                <span style={{ color: "white", paddingBottom: "10px" }}>{message}</span><br /><br />
+                <br /><Text>{message}</Text><br />
             </ModalContent>
             <ModalFooter justify="END">
                 <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
