@@ -19,7 +19,7 @@ const cl = classNameFactory("vc-trans-");
 const debug = false;
 let key: string | undefined;
 let voicePlayingAudio: HTMLAudioElement | null;
-let cachedVoiceElements: Record<string, Object> = {};
+const cachedVoiceElements: Record<string, Object> = {};
 const templateVoicepack = JSON.stringify({
     "name": "Reyna",
     "iconURL": "https://cdn.discordapp.com/emojis/1340353599858806785.webp?size=512",
@@ -104,14 +104,14 @@ function onLoad() {
         try {
             // Parse input - either URL or JSON string
             let data: any;
-            if (url.startsWith('{"') || url.startsWith('[{')) {
+            if (url.startsWith('{"') || url.startsWith("[{")) {
                 // Input is JSON string
                 data = JSON.parse(url);
             } else {
                 // Input is URL - ensure HTTPS
-                const secureUrl = url.replace(/^http:/, 'https:');
-                if (!secureUrl.startsWith('https://')) {
-                    throw new Error('Invalid URL: Must use HTTPS protocol');
+                const secureUrl = url.replace(/^http:/, "https:");
+                if (!secureUrl.startsWith("https://")) {
+                    throw new Error("Invalid URL: Must use HTTPS protocol");
                 }
                 const response = await fetch(secureUrl);
                 if (!response.ok) {
@@ -126,14 +126,14 @@ function onLoad() {
 
             // Required fields for validation
             const requiredFields = [
-                'name',
-                'author',
-                'onnxFileUrl',
-                'iconURL',
-                'id',
-                'styleKey',
-                'available',
-                'temporarilyAvailable'
+                "name",
+                "author",
+                "onnxFileUrl",
+                "iconURL",
+                "id",
+                "styleKey",
+                "available",
+                "temporarilyAvailable"
             ] as const;
 
             // Process each voice
@@ -144,7 +144,7 @@ function onLoad() {
                 );
 
                 if (missingFields.length > 0) {
-                    throw new Error(`Invalid voice data. Missing fields: ${missingFields.join(', ')}`);
+                    throw new Error(`Invalid voice data. Missing fields: ${missingFields.join(", ")}`);
                 }
 
                 // Store voice with download source
@@ -162,7 +162,7 @@ function onLoad() {
             key = openVoiceFiltersModal();
 
         } catch (error) {
-            openErrorModal(error instanceof Error ? error.message : 'Failed to process voice pack');
+            openErrorModal(error instanceof Error ? error.message : "Failed to process voice pack");
         }
     };
 
@@ -564,7 +564,7 @@ function onLoad() {
         }
 
         const customVoices = getVoicesElements();
-        customVoices.forEach((voice) => {
+        customVoices.forEach(voice => {
             voiceFilterState.voiceFilters[++i] = { ...voice.props, id: i, available: true, temporarilyAvailable: false, name: "🛠️ " + voice.props.name };
         });
 
@@ -573,9 +573,9 @@ function onLoad() {
 
         // Update store methods using voiceFilterState
         VoiceFilterStore.getVoiceFilters = () => voiceFilterState.voiceFilters;
-        VoiceFilterStore.getVoiceFilter = (id) => voiceFilterState.voiceFilters[id];
+        VoiceFilterStore.getVoiceFilter = id => voiceFilterState.voiceFilters[id];
         VoiceFilterStore.getVoiceFilterModels = () => voiceFilterState.models;
-        VoiceFilterStore.getModelState = (id) => voiceFilterState.modelState[id];
+        VoiceFilterStore.getModelState = id => voiceFilterState.modelState[id];
         VoiceFilterStore.getSortedVoiceFilters = () => voiceFilterState.sortedVoiceFilters.map(e => voiceFilterState.voiceFilters[e]);
         VoiceFilterStore.getCatalogUpdateTime = () => voiceFilterState.catalogUpdateTime;
         VoiceFilterStore.getLimitedTimeVoices = () => voiceFilterState.limitedTimeVoices;
