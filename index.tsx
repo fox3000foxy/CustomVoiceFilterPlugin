@@ -62,6 +62,7 @@ export interface CustomVoiceFilterStore {
     deleteById: (id: string) => void;
     deleteAll: () => void;
     exportVoiceFilters: () => void;
+    exportIndividualVoice: (id: string) => void;
     importVoiceFilters: () => void;
     downloadVoice: (url: string) => void;
     updateVoicesList: () => void;
@@ -108,6 +109,12 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 const { voiceFilters } = get();
                 const exportData = JSON.stringify(voiceFilters, null, 2);
                 const exportFileName = findByProps("getCurrentUser").getCurrentUser().username + "_voice_filters_export.json";
+                downloadFile(exportFileName, exportData);
+            },
+            exportIndividualVoice: (id: string) => {
+                const { voiceFilters } = get();
+                const exportData = JSON.stringify(voiceFilters[id], null, 2);
+                const exportFileName = voiceFilters[id].name + "_voice_filter_export.json";
                 downloadFile(exportFileName, exportData);
             },
             importVoiceFilters: () => {
