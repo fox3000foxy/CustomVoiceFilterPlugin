@@ -11,6 +11,7 @@ import { Button, Forms, Text } from "@webpack/common";
 import { JSX } from "react";
 
 import { templateVoicepack } from ".";
+import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { downloadFile } from "./utils";
 import { openVoiceFiltersModal } from "./VoiceFiltersModal";
 
@@ -46,7 +47,10 @@ export function HelpModal({ modalProps, close }: { modalProps: any; close: () =>
                 </Flex>
             </ModalContent>
             <ModalFooter justify="END">
-                <Button onClick={close} style={{ alignSelf: "flex-end" }}>Close</Button>
+                <Flex style={{ gap: "0.5rem", justifyContent: "space-between", alignItems: "center", }}>
+                    <Button onClick={close} style={{ alignSelf: "flex-end" }} color={Button.Colors.TRANSPARENT}>Close</Button>
+                    <Button onClick={openCreateVoiceModal} style={{ alignSelf: "flex-end" }} color={Button.Colors.GREEN}>Create Voicepack</Button>
+                </Flex>
             </ModalFooter>
         </ModalRoot>
     );

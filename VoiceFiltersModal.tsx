@@ -7,10 +7,11 @@
 import { Flex } from "@components/Flex";
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { Button, Forms, Text, TextInput, useState } from "@webpack/common";
-import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
-import { openHelpModal } from "./HelpModal";
-import { playPreview } from "./utils";
 import { JSX } from "react";
+
+import { openHelpModal } from "./HelpModal";
+import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
+import { playPreview } from "./utils";
 
 export function openVoiceFiltersModal() {
     const key = openModal(modalProps => (
@@ -62,7 +63,7 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
 
                     <Text>Voices filters list:</Text>
                     <Flex style={{ gap: "0.5rem", flexWrap: "wrap" }}>
-                        {voiceComponents.length > 0 ? voiceComponents : <i>No voice filters found</i>}
+                        {voiceComponents.length > 0 ? voiceComponents : <i style={{ color: "white" }}>No voice filters found</i>}
                     </Flex>
                 </Flex>
             </ModalContent>
