@@ -125,6 +125,9 @@ async function onLoad() {
     // Download Voice
     const downloadVoice = async (url: string): Promise<void> => {
         try {
+            // Close the current modal before proceeding
+            if (key) closeModal(key);
+
             // Parse input - either URL or JSON string
             let data: any;
             if (url.startsWith('{"') || url.startsWith("[{")) {
@@ -167,7 +170,6 @@ async function onLoad() {
 
             // Save and update UI
             await setStorageData(voiceFiltersStorage);
-            closeModal(key as string);
             updateVoicesList();
             voiceFilterComponents = await getVoicesElements();
             key = openVoiceFiltersModal();
