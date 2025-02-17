@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Flex } from "@components/Flex";
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms, TextInput } from "@webpack/common";
-import { JSX, useState } from "react";
-import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "userplugins/CustomVoiceFilterPlugin";
-import { openHelpModal } from "userplugins/CustomVoiceFilterPlugin/HelpModal";
-import { playPreview } from "userplugins/CustomVoiceFilterPlugin/utils";
+import { Button, Forms, Text, TextInput, useState } from "@webpack/common";
+import { JSX } from "react";
+
+import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from ".";
+import { openHelpModal } from "./HelpModal";
+import { playPreview } from "./utils";
 
 export function openVoiceFiltersModal() {
     const key = openModal(modalProps => (
@@ -36,42 +38,42 @@ export function VoiceFiltersModal({ modalProps, close, accept }: { modalProps: a
 
     return (
         <ModalRoot {...modalProps} size={ModalSize.LARGE}>
-            <ModalHeader className="modalHeader">
-                <Forms.FormTitle tag="h2" className="modalTitle">
+            <ModalHeader>
+                <Forms.FormTitle tag="h2">
                     Voice Filters Management Menu
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
-            <ModalContent style={{ color: "white" }}>
-                <br /><br />
-                <span style={{ color: "white", paddingBottom: "10px" }}>Download a voicepack from a url or paste a voicepack data here:</span><br /><br />
-                <TextInput
-                    value={url}
-                    placeholder="( e.g. https://fox3000foxy.com/voicepacks/agents.json )"
-                    onChange={setUrl}
-                    onKeyDown={e => { if (e.key === "Enter") downloadVoice(url); }}
-                    style={{ width: "100%" }}
-                />
-                <br />
-                <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-                    <Button onClick={() => { downloadVoice(url); }}>Download</Button>
-                    <Button onClick={deleteAll} color={Button.Colors.RED}>Delete all</Button>
-                    <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
-                    <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
-                </div>
-                <br /><br />
-                <span style={{ color: "white", paddingBottom: "10px" }}>Voices filters list:</span><br /><br />
-                <div style={{ display: "inline-flex", flexWrap: "wrap", gap: "8px" }}>
-                    {voiceComponents.length > 0 ? voiceComponents : <i>No voice filters found</i>}
-                </div>
+            <ModalContent >
+                <Flex style={{ gap: "1rem" }} flexDirection="column">
+                    <span style={{ color: "white", paddingBottom: "10px" }}>Download a voicepack from a url or paste a voicepack data here:</span>
+                    <TextInput
+                        value={url}
+                        placeholder="( e.g. https://fox3000foxy.com/voicepacks/agents.json )"
+                        onChange={setUrl}
+                        onKeyDown={e => { if (e.key === "Enter") downloadVoice(url); }}
+                        style={{ width: "100%" }}
+                    />
+                    <Flex style={{ gap: "0.5rem" }}>
+                        <Button onClick={() => { downloadVoice(url); }}>Download</Button>
+                        <Button onClick={deleteAll} color={Button.Colors.RED}>Delete all</Button>
+                        <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
+                        <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
+                    </Flex>
+
+                    <span>Voices filters list:</span>
+                    <Flex style={{ gap: "0.5rem" }}>
+                        {voiceComponents.length > 0 ? voiceComponents : <i>No voice filters found</i>}
+                    </Flex>
+                </Flex>
             </ModalContent>
             <ModalFooter justify="END">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+                <Flex style={{ gap: "0.5rem", justifyContent: "space-between", alignItems: "center", }}>
                     <Button color={Button.Colors.TRANSPARENT} onClick={() => {
                         openHelpModal();
                     }}>Learn how to build your own voicepack</Button>
                     <Button color={Button.Colors.GREEN} onClick={accept}>Close</Button>
-                </div>
+                </Flex>
             </ModalFooter >
         </ModalRoot >
     );
@@ -91,9 +93,9 @@ function VoiceFilter({ name, previewSoundURLs, styleKey, iconURL, id }: IVoiceFi
                         <div className={VoiceFilterStyles.insetBorder}></div>
                     </div>
                 </div>
-                <div className={`text-xs/medium_cf4812 ${VoiceFilterStyles.filterName}`}>
+                <Text variant="text-xs/medium" className={VoiceFilterStyles.filterName}>
                     {name}
-                </div>
+                </Text>
             </div>
             <div onClick={() => updateById(id)} className={`${VoiceFilterStyles.hoverButtonCircle} ${VoiceFilterStyles.previewButton}`} aria-label="Play a preview of the Skye voice filter" role="button" tabIndex={0}>
                 <svg style={{ zoom: "0.6" }} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
