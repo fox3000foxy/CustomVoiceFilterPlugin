@@ -5,11 +5,11 @@
  */
 
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Forms, TextInput } from "@webpack/common";
-import { JSX, useState } from "react";
-import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "userplugins/CustomVoiceFilterPlugin";
-import { openHelpModal } from "userplugins/CustomVoiceFilterPlugin/HelpModal";
-import { playPreview } from "userplugins/CustomVoiceFilterPlugin/utils";
+import { Button, Forms, TextInput, useState } from "@webpack/common";
+import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
+import { openHelpModal } from "./HelpModal";
+import { playPreview } from "./utils";
+import { JSX } from "react";
 
 export function openVoiceFiltersModal() {
     const key = openModal(modalProps => (
