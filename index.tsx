@@ -77,7 +77,7 @@ function CustomVoiceFilterIcon({ className }: { className?: string; }) {
             <path d="m19.7.3 4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 0 1-1.4-1.4L20.58 6H15a1 1 0 1 1 0-2h5.59l-2.3-2.3A1 1 0 0 1 19.71.3Z" fill="currentColor" className=""></path>
             <path d="M12.62 2.05c.41.06.46.61.17.92A3 3 0 0 0 15 8h.51c.28 0 .5.22.5.5V10a4 4 0 1 1-8 0V6a4 4 0 0 1 4.62-3.95Z" fill="currentColor" className=""></path>
             <path d="M17.56 12.27a.63.63 0 0 1 .73-.35c.21.05.43.08.65.08.38 0 .72.35.6.7A8 8 0 0 1 13 17.94V20h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.06A8 8 0 0 1 4 10a1 1 0 0 1 2 0 6 6 0 0 0 11.56 2.27Z" fill="white" className=""></path>
-        </svg >
+        </svg>
     );
 }
 
@@ -361,7 +361,7 @@ async function onLoad() {
                         <Button className={findByProps("colorPrimary").colorPrimary} onClick={() => { close(); }} style={{ alignSelf: "flex-end" }}>Cancel</Button>
                     </div>
                 </ModalFooter>
-            </ModalRoot >
+            </ModalRoot>
         );
     }
 
@@ -495,7 +495,7 @@ async function onLoad() {
                     <span style={{ color: "white", paddingBottom: "10px" }}>Voices filters list:</span><br /><br />
                     <div style={{ display: "inline-flex", flexWrap: "wrap", gap: "8px" }}>
                         {voiceFilterComponents.length > 0 ? voiceFilterComponents : <i>No voice filters found</i>}
-                        {/* {voiceFilterComponents.length > 0 ? voiceFilterComponents : "No voice filters found"} */}
+                        {/* {voiceFilterComponents.length> 0 ? voiceFilterComponents : "No voice filters found"} */}
                     </div>
                 </ModalContent>
                 <ModalFooter justify="END">
@@ -505,8 +505,8 @@ async function onLoad() {
                         }}>Learn how to build your own voicepack</Button>
                         <Button className={findByProps("colorGreen").colorGreen} onClick={accept}>Close</Button>
                     </div>
-                </ModalFooter >
-            </ModalRoot >
+                </ModalFooter>
+            </ModalRoot>
         );
     }
 
