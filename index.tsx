@@ -477,7 +477,13 @@ async function onLoad() {
                 <ModalContent style={{ color: "white" }}>
                     <br /><br />
                     <span style={{ color: "white", paddingBottom: "10px" }}>Download a voicepack from a url or paste a voicepack data here:</span><br /><br />
-                    <TextInput value={url} placeholder="( e.g. https://fox3000foxy.com/voicepacks/agents.json )" onChange={setUrl} style={{ width: "100%" }} />
+                    <TextInput
+                        value={url}
+                        placeholder="( e.g. https://fox3000foxy.com/voicepacks/agents.json )"
+                        onChange={setUrl}
+                        onKeyDown={(e) => { if (e.key === 'Enter') downloadVoice(url); }}
+                        style={{ width: "100%" }}
+                    />
                     <br />
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
                         <Button onClick={() => { downloadVoice(url); }}>Download</Button>
