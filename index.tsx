@@ -9,14 +9,15 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { DataStore } from "@api/index";
 import { classNameFactory } from "@api/Styles";
 import { CodeBlock } from "@components/CodeBlock";
-import { ModalSize } from "@utils/modal";
+import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import definePlugin from "@utils/types";
-import { filters, findAll } from "@webpack";
-import { Text } from "@webpack/common";
+import { filters, findAll, findByProps } from "@webpack";
+import { Button, Flex, Forms, Text, TextInput } from "@webpack/common";
 import { JSX } from "react";
-const cl = classNameFactory("vc-trans-");
+
 
 // Variables
+const cl = classNameFactory("vc-trans-");
 const debug = false;
 let key: string | undefined;
 let voicePlayingAudio: HTMLAudioElement | null;
@@ -104,12 +105,6 @@ export const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
 // On Load
 async function onLoad() {
     // Vencord modules
-    const { Util, Webpack, Components } = Vencord;
-    const { openModal, ModalRoot, ModalContent, ModalFooter, ModalHeader, ModalCloseButton, closeModal } = Util;
-    const { Button, TextInput, Forms, Switch } = Webpack.Common;
-    const { Flex } = Components;
-    const { findByProps } = Webpack;
-
     const { useState } = findByProps("useEffect", "useState");
     let voiceFilterComponents = await getVoicesElements();
 
