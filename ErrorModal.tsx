@@ -27,7 +27,7 @@ interface ErrorModalProps {
     close: () => void;
 }
 
-export function ErrorModal({ modalProps, close, message }: ErrorModalProps): JSX.Element {
+function ErrorModal({ modalProps, close, message }: ErrorModalProps): JSX.Element {
     return (
         <ModalRoot {...modalProps} size={ModalSize.SMALL}>
             <ModalHeader separator={false}>

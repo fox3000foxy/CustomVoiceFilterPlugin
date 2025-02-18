@@ -276,7 +276,7 @@ function CustomVoiceFilterIcon({ className }: { className?: string; }) {
 }
 
 // Custom Voice Filter Chat Bar Icon
-export const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
+const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
     const button = (
         <ChatBarButton
             tooltip="Open Custom Voice Filter Modal"

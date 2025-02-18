@@ -28,7 +28,7 @@ interface ConfirmModalProps {
     close: () => void;
 }
 
-export function ConfirmModal({ modalProps, message, accept, close }: ConfirmModalProps): JSX.Element {
+function ConfirmModal({ modalProps, message, accept, close }: ConfirmModalProps): JSX.Element {
     return (
         <ModalRoot {...modalProps} size={ModalSize.SMALL}>
             <ModalHeader separator={false}>

@@ -28,7 +28,7 @@ interface HelpModalProps {
     close: () => void;
 }
 
-export function HelpModal({ modalProps, close }: HelpModalProps): JSX.Element {
+function HelpModal({ modalProps, close }: HelpModalProps): JSX.Element {
     return (
         <ModalRoot {...modalProps} size={ModalSize.LARGE}>
             <ModalHeader>
