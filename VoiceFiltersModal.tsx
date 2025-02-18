@@ -49,7 +49,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
         <ModalRoot {...modalProps} size={ModalSize.LARGE}>
             <ModalHeader>
                 <Forms.FormTitle tag="h2" className="modalTitle">
-                    Voice Filters Management Menu
+                    Custom Voice Filters Menu
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
@@ -74,7 +74,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                         }} color={Button.Colors.TRANSPARENT}>Download Default</Button>
                     </Flex>
 
-                    <Text>Voices filters list:</Text>
+                    <Text>Voice filters list:</Text>
                     <Flex style={{ gap: "0.5rem" }} wrap={Flex.Wrap.WRAP}>
                         {voiceComponents.length > 0 ? voiceComponents : <Text style={{ fontStyle: "italic" }}>No voice filters found</Text>}
                     </Flex>
