@@ -41,7 +41,7 @@ function CreateVoiceFilterModal({ modalProps, close, defaultValue }: CreateVoice
     }, []);
     const submit = useCallback(() => {
         if (requiredFields.every(field => voiceFilter[field])) {
-            useVoiceFiltersStore.getState().downloadVoice(JSON.stringify({
+            useVoiceFiltersStore.getState().downloadVoicepack(JSON.stringify({
                 id: voiceFilter.author + "-" + voiceFilter.name.toLowerCase().replace(/ /g, "-"),
                 available: true,
                 temporarilyAvailable: false,

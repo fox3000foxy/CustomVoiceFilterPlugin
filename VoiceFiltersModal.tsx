@@ -36,7 +36,7 @@ interface VoiceFiltersModalProps {
 function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps): JSX.Element {
     const [url, setUrl] = useState("");
     const [defaultVoicepack, setDefaultVoicepack] = useState(false);
-    const { downloadVoice, deleteAll, exportVoiceFilters, importVoiceFilters, voiceFilters } = useVoiceFiltersStore();
+    const { downloadVoicepack, deleteAll, exportVoiceFilters, importVoiceFilters, voiceFilters } = useVoiceFiltersStore();
 
     const voiceComponents = Object.values(voiceFilters).map(voice =>
         <VoiceFilter {...voice} key={voice.id} />
@@ -57,17 +57,17 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                         value={url}
                         placeholder="( e.g. https://fox3000foxy.com/voicepacks/agents.json )"
                         onChange={setUrl}
-                        onKeyDown={e => { if (e.key === "Enter") downloadVoice(url); }}
+                        onKeyDown={e => { if (e.key === "Enter") downloadVoicepack(url); }}
                         style={{ width: "100%" }}
                     />
                     <Flex style={{ gap: "0.5rem" }}>
-                        <Button onClick={() => downloadVoice(url)}>Download</Button>
+                        <Button onClick={() => downloadVoicepack(url)}>Download</Button>
                         <Button onClick={deleteAll} color={Button.Colors.RED}>Delete all</Button>
                         <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
                         <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
                         <Button onClick={() => {
                             setDefaultVoicepack(true);
-                            downloadVoice("https://fox3000foxy.com/voicepacks/agents.json");
+                            downloadVoicepack("https://fox3000foxy.com/voicepacks/agents.json");
                         }} color={Button.Colors.TRANSPARENT}>Download Default</Button>
                     </Flex>
 

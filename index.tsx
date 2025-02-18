@@ -9,7 +9,7 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { DataStore } from "@api/index";
 import { proxyLazy } from "@utils/lazy";
 import { closeModal } from "@utils/modal";
-import definePlugin from "@utils/types";
+import definePlugin, { PluginNative } from "@utils/types";
 import { filters, findAll, findByProps, findStore } from "@webpack";
 import { zustandCreate, zustandPersist } from "@webpack/common";
 
@@ -36,7 +36,7 @@ export const templateVoicepack = JSON.stringify({
     "temporarilyAvailable": false,
     "id": "724847846897221642-reyna",
     "author": "724847846897221642",
-    "onnxFileUrl": "https://cdn.discordapp.com/attachments/1264847846897221642/1264847846897221642/reyna.onnx"
+    "onnxFileUrl": "https://fox3000foxy.com/voices_models/reyna_simple.onnx"
 } satisfies IVoiceFilter, null, 2);
 
 const STORAGE_KEY = "vencordVoiceFilters";
@@ -64,7 +64,8 @@ export interface CustomVoiceFilterStore {
     exportVoiceFilters: () => void;
     exportIndividualVoice: (id: string) => void;
     importVoiceFilters: () => void;
-    downloadVoice: (url: string) => void;
+    downloadVoicepack: (url: string) => void;
+    downloadVoiceModel: (voiceFilter: IVoiceFilter) => Promise<{ success: boolean, voiceFilter: IVoiceFilter, path: string | null; }>;
     updateVoicesList: () => void;
 }
 
@@ -86,7 +87,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                     closeModal(key);
                     const { downloadUrl } = get().voiceFilters[id];
                     const hash = downloadUrl?.includes("?") ? "&" : "?";
-                    get().downloadVoice(downloadUrl + hash + "v=" + Date.now());
+                    get().downloadVoicepack(downloadUrl + hash + "v=" + Date.now());
                 });
             },
             deleteById: (id: string) => {
@@ -137,7 +138,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 };
                 fileInput.click();
             },
-            downloadVoice: async (url: string) => {
+            downloadVoicepack: async (url: string) => {
                 try {
                     // Parse input - either URL or JSON string
                     let data: any;
@@ -185,6 +186,10 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 } catch (error) {
                     openErrorModal(error instanceof Error ? error.message : "Failed to process voice pack");
                 }
+            },
+            downloadVoiceModel: async (voiceFilter: IVoiceFilter) => {
+                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+                return Native.downloadCustomVoiceFilter(DiscordNative.fileManager.getModulePath(), voiceFilter);
             },
             updateVoicesList: async () => {
                 // Move the object declaration to a separate variable first
@@ -308,6 +313,20 @@ export default definePlugin({
         voices = findAll(filters.byProps("skye")).find(m => m.skye?.name);
 
         useVoiceFiltersStore.subscribe(store => store.updateVoicesList());
+
+        // ============ DEMO ============
+        const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+        console.log("Natives modules:", Native, DiscordNative);
+        const modulePath = await DiscordNative.fileManager.getModulePath();
+        console.log("Module path:", modulePath);
+        const { success, voiceFilter, path } = await Native.downloadCustomVoiceFilter(modulePath, JSON.parse(templateVoicepack));
+        console.log("Voice model debug output:", { success, voiceFilter, path });
+        if (success) {
+            console.log("Voice model downloaded to:", path);
+        } else {
+            console.error("Failed to download voice model");
+        }
+        // ============ DEMO ============
     },
     stop() {
         console.log("CustomVoiceFilters stopped");
