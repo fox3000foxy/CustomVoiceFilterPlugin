@@ -38,7 +38,6 @@ interface VoiceFiltersModalProps {
 
 function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps): JSX.Element {
     const [url, setUrl] = useState("");
-    const [defaultVoicepack, setDefaultVoicepack] = useState(false);
     const { downloadVoicepack, deleteAll, exportVoiceFilters, importVoiceFilters, voiceFilters } = useVoiceFiltersStore();
 
     const voiceComponents = Object.values(voiceFilters).map(voice =>
@@ -68,10 +67,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                         <Button onClick={deleteAll} color={Button.Colors.RED}>Delete all</Button>
                         <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
                         <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
-                        <Button onClick={() => {
-                            setDefaultVoicepack(true);
-                            downloadVoicepack("https://fox3000foxy.com/voicepacks/agents.json");
-                        }} color={Button.Colors.TRANSPARENT}>Download Default</Button>
+                        <Button onClick={() => downloadVoicepack("https://fox3000foxy.com/voicepacks/agents.json")} color={Button.Colors.TRANSPARENT}>Download Default</Button>
                     </Flex>
 
                     <Text>Voice filters list:</Text>
