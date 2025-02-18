@@ -112,7 +112,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                 <div onClick={() => voiceFilter.available && modelState.status === "downloaded" && previewSoundURLs && playPreview(previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
                     <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available || modelState.status !== "downloaded" ? VoiceFilterStyles.underDevelopment : ""}`}>
                         <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
-                        {modelState.status === "not_downloaded" && <div className={VoiceFilterStyles.downloadIcon} onClick={async () => {
+                        {voiceFilter.available && modelState.status === "not_downloaded" && <div className={VoiceFilterStyles.downloadIcon} onClick={async () => {
                             // console.log("downloading voice filter", voiceFilter);
                             setModelState({ status: "downloading", downloadedBytes: 0 });
                             const res = await downloadCustomVoiceModel(voiceFilter);
@@ -121,7 +121,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                                 setModelState({ status: "downloaded", downloadedBytes: 0 });
                             }
                         }}><DownloadIcon /></div>}
-                        {modelState.status === "downloading" && <div className={VoiceFilterStyles.downloadIcon}><DownloadingIcon /></div>}
+                        {voiceFilter.available && modelState.status === "downloading" && <div className={VoiceFilterStyles.downloadIcon}><DownloadingIcon /></div>}
                         <div className={VoiceFilterStyles.insetBorder}></div>
                     </div>
                 </div>
