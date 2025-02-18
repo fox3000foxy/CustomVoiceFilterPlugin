@@ -98,7 +98,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     return (
         <div className={`${VoiceFilterStyles.filter} ${VoiceFilterStyles[styleKey]}`}>
             <div className={`${VoiceFilterStyles.selector} ${VoiceFilterStyles.selector}`} role="button" tabIndex={0}>
-                <div onClick={() => previewSoundURLs && playPreview(previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
+                <div onClick={() => voiceFilter.available && previewSoundURLs && playPreview(previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
                     <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available ? VoiceFilterStyles.underDevelopment : ""}`}>
                         <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
                         <div className={VoiceFilterStyles.insetBorder}></div>
