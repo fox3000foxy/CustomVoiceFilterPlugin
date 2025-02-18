@@ -107,20 +107,25 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     }, [modulePath]);
 
     return (
-        <div className={`${VoiceFilterStyles.filter} ${VoiceFilterStyles[styleKey]}`}>
+        <div className={`${VoiceFilterStyles.filter} ${VoiceFilterStyles[styleKey]}`} onClick={async () => {
+            if (!voiceFilter.available) return;
+
+            // download and preview if downloaded
+            if (modelState.status === "not_downloaded") {
+                setModelState({ status: "downloading", downloadedBytes: 0 });
+                const res = await downloadCustomVoiceModel(voiceFilter);
+                if (res.success) setModelState({ status: "downloaded", downloadedBytes: 0 });
+            }
+        }}>
             <div className={`${VoiceFilterStyles.selector} ${VoiceFilterStyles.selector}`} role="button" tabIndex={0}>
-                <div onClick={() => voiceFilter.available && modelState.status === "downloaded" && previewSoundURLs && playPreview(previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
+                <div className={VoiceFilterStyles.iconTreatmentsWrapper}>
                     <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available || modelState.status !== "downloaded" ? VoiceFilterStyles.underDevelopment : ""}`}>
-                        <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
-                        {voiceFilter.available && modelState.status === "not_downloaded" && <div className={VoiceFilterStyles.downloadIcon} onClick={async () => {
-                            // console.log("downloading voice filter", voiceFilter);
-                            setModelState({ status: "downloading", downloadedBytes: 0 });
-                            const res = await downloadCustomVoiceModel(voiceFilter);
-                            // console.log("downloadCustomVoiceFilter", res);
-                            if (res.success) {
-                                setModelState({ status: "downloaded", downloadedBytes: 0 });
+                        <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} onClick={() => {
+                            if (modelState.status === "downloaded" && previewSoundURLs) {
+                                playPreview(previewSoundURLs[0]);
                             }
-                        }}><DownloadIcon /></div>}
+                        }} />
+                        {voiceFilter.available && modelState.status === "not_downloaded" && <div className={VoiceFilterStyles.downloadIcon}><DownloadIcon /></div>}
                         {voiceFilter.available && modelState.status === "downloading" && <div className={VoiceFilterStyles.downloadIcon}><DownloadingIcon /></div>}
                         <div className={VoiceFilterStyles.insetBorder}></div>
                     </div>
@@ -168,10 +173,11 @@ function DownloadIcon(): JSX.Element {
 
 function DownloadingIcon(): JSX.Element {
     return (
-        <svg className={VoiceFilterStyles.thumbnail} style={{ zoom: "0.4", margin: "auto", top: "0", left: "0", bottom: "0", right: "0" }} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path fill="white" stroke="black" strokeWidth="1" d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" />
-            <path fill="white" stroke="black" strokeWidth="1" d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" />
-            <path fill="white" stroke="black" strokeWidth="1" d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" />
+
+        <svg className={VoiceFilterStyles.thumbnail} style={{ zoom: "0.4", margin: "auto", top: "0", left: "0", bottom: "0", right: "0" }} viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <path fill="white" stroke="black" strokeWidth="1" d="M1023.849566 529.032144C1022.533495 457.744999 1007.544916 386.64064 979.907438 321.641387 952.343075 256.605575 912.349158 197.674868 863.252422 148.980264 814.192243 100.249102 755.992686 61.717486 693.004095 36.310016 630.052062 10.792874 562.347552-1.380777 495.483865 0.081523 428.620178 1.470709 362.012394 16.495846 301.144139 44.206439 240.202769 71.807359 185.000928 111.874391 139.377154 161.044242 93.753381 210.177537 57.707676 268.450209 33.945294 331.475357 10.073239 394.463948-1.296147 462.1319 0.166154 529.032144 1.482224 595.968946 15.593423 662.503615 41.549256 723.371871 67.468531 784.240126 105.013094 839.405409 151.075558 884.956067 197.101464 930.579841 251.645269 966.552431 310.612534 990.241698 369.543241 1014.040637 432.860849 1025.336908 495.483865 1023.874608 558.143438 1022.485422 620.291206 1008.337666 677.174693 982.381833 734.094737 956.462558 785.677384 918.954552 828.230327 872.892089 870.819826 826.902741 904.416179 772.395492 926.533473 713.5379 939.986637 677.85777 949.089457 640.605667 953.915048 602.841758 955.194561 602.951431 956.510631 602.987988 957.790144 602.987988 994.27454 602.987988 1023.849566 572.425909 1023.849566 534.735116 1023.849566 532.834125 1023.739893 530.933135 1023.593663 529.032144L1023.849566 529.032144 1023.849566 529.032144ZM918.892953 710.284282C894.691881 767.021538 859.596671 818.421398 816.568481 860.82811 773.540291 903.307938 722.652236 936.75806 667.706298 958.729124 612.760359 980.773303 553.902767 991.192193 495.483865 989.729893 437.064963 988.377265 379.304096 975.106889 326.441936 950.832702 273.543218 926.668187 225.616322 891.682649 186.097653 848.764132 146.542426 805.91873 115.35887 755.176905 94.959779 700.486869 74.451015 645.796833 64.799833 587.195144 66.189018 529.032144 67.541646 470.869145 79.934642 413.437296 102.563741 360.867595 125.119725 308.297895 157.765582 260.663459 197.759499 221.364135 237.716858 182.064811 284.985719 151.137157 335.910331 130.884296 386.834944 110.55832 441.305634 101.01681 495.483865 102.47911 549.662096 103.868296 603.036061 116.261292 651.876895 138.780718 700.754287 161.22703 745.025432 193.690099 781.509828 233.428113 818.067339 273.166127 846.764984 320.142529 865.518987 370.665008 884.346105 421.224045 893.156465 475.256046 891.76728 529.032144L891.986625 529.032144C891.840395 530.933135 891.76728 532.797568 891.76728 534.735116 891.76728 569.939999 917.540325 598.893547 950.66143 602.585856 944.227308 639.728286 933.589072 675.956779 918.892953 710.284282Z" />
+            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="3s" repeatCount="indefinite" />
         </svg>
+
     );
 }
