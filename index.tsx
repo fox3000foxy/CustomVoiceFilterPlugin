@@ -276,8 +276,10 @@ function CustomVoiceFilterIcon({ className }: { className?: string; }) {
 }
 
 // Custom Voice Filter Chat Bar Icon
-const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
-    const button = (
+const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
+    if (!isMainChat) return null;
+
+    return (
         <ChatBarButton
             tooltip="Open Custom Voice Filter Modal"
             onClick={openVoiceFiltersModal}
@@ -288,8 +290,6 @@ const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = () => {
             <CustomVoiceFilterIcon className={"chat-button"} />
         </ChatBarButton>
     );
-
-    return button;
 };
 
 export default definePlugin({
