@@ -18,6 +18,8 @@ let voicePlayingAudio: HTMLAudioElement | null;
 export function playPreview(url: string, cb: () => void): void {
     if (voicePlayingAudio) {
         voicePlayingAudio.pause();
+        voicePlayingAudio.removeEventListener("ended", cb);
+        voicePlayingAudio.removeEventListener("pause", cb);
         voicePlayingAudio.currentTime = 0;
         voicePlayingAudio.src = url;
         voicePlayingAudio.play();
@@ -27,4 +29,5 @@ export function playPreview(url: string, cb: () => void): void {
         voicePlayingAudio.play();
     }
     voicePlayingAudio.addEventListener("ended", cb);
+    voicePlayingAudio.addEventListener("pause", cb);
 }
