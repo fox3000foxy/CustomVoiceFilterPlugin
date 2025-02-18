@@ -105,7 +105,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                     </div>
                 </div>
                 <Text variant="text-xs/medium" className={VoiceFilterStyles.filterName}>
-                    {name}
+                    {voiceFilter.available ? name : "🚧 " + name}
                 </Text>
             </div>
 
