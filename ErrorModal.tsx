@@ -10,7 +10,7 @@ import { JSX } from "react";
 
 
 // Open Error Modal
-export function openErrorModal(message: string) {
+export function openErrorModal(message: string): string {
     const key = openModal(modalProps => (
         <ErrorModal
             modalProps={modalProps}

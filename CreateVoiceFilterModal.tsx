@@ -15,7 +15,7 @@ import { IVoiceFilter, useVoiceFiltersStore } from "./index";
 const requiredFields = ["name", "iconURL", "onnxFileUrl", "previewSoundURLs"] as const satisfies readonly (keyof IVoiceFilter)[];
 
 
-export function openCreateVoiceModal(defaultValue?: Partial<IVoiceFilter>) {
+export function openCreateVoiceModal(defaultValue?: Partial<IVoiceFilter>): string {
     const key = openModal(modalProps => (
         <CreateVoiceFilterModal modalProps={modalProps} close={() => closeModal(key)} defaultValue={defaultValue} />
     ));

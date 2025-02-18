@@ -13,7 +13,7 @@ import { openHelpModal } from "./HelpModal";
 import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { playPreview } from "./utils";
 
-export function openVoiceFiltersModal() {
+export function openVoiceFiltersModal(): string {
     const key = openModal(modalProps => (
         <VoiceFiltersModal
             modalProps={modalProps}

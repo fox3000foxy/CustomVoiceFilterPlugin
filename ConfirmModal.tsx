@@ -9,7 +9,7 @@ import { Button, Flex, Forms, Text } from "@webpack/common";
 import { JSX } from "react";
 
 // Open Confirm Modal
-export function openConfirmModal(message: string, accept: (key: string) => void) {
+export function openConfirmModal(message: string, accept: (key: string) => void): string {
     const key = openModal(modalProps => (
         <ConfirmModal
             modalProps={modalProps}

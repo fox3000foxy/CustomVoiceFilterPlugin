@@ -13,7 +13,7 @@ import { templateVoicepack } from ".";
 import { downloadFile } from "./utils";
 import { openVoiceFiltersModal } from "./VoiceFiltersModal";
 
-export function openHelpModal() {
+export function openHelpModal(): string {
     const key = openModal(modalProps => (
         <HelpModal
             modalProps={modalProps}
