@@ -5,13 +5,16 @@
  */
 
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
-import { Button, Flex, Forms, Text, TextInput, useState } from "@webpack/common";
+import { PluginNative } from "@utils/types";
+import { Button, Flex, Forms, Text, TextInput, useEffect, useState } from "@webpack/common";
 import { JSX } from "react";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
-import { IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
+import { downloadCustomVoiceModel, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { playPreview } from "./utils";
+
+const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
 
 export function openVoiceFiltersModal(): string {
     const key = openModal(modalProps => (
@@ -92,15 +95,33 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
 // Voice Filter
 function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     const { name, previewSoundURLs, styleKey, iconURL, id } = voiceFilter;
-    const { updateById, deleteById, exportIndividualVoice } = useVoiceFiltersStore();
+    const { updateById, deleteById, exportIndividualVoice, modulePath } = useVoiceFiltersStore();
     const className = `${VoiceFilterStyles.hoverButtonCircle} ${VoiceFilterStyles.previewButton}`;
+    const [modelState, setModelState] = useState({ status: "not_downloaded", downloadedBytes: 0 });
+    useEffect(() => {
+        const fetchModelState = async () => {
+            const modelState = await Native.getModelState(voiceFilter.id, modulePath);
+            setModelState(modelState);
+        };
+        fetchModelState();
+    }, [modulePath]);
 
     return (
         <div className={`${VoiceFilterStyles.filter} ${VoiceFilterStyles[styleKey]}`}>
             <div className={`${VoiceFilterStyles.selector} ${VoiceFilterStyles.selector}`} role="button" tabIndex={0}>
-                <div onClick={() => voiceFilter.available && previewSoundURLs && playPreview(previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
-                    <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available ? VoiceFilterStyles.underDevelopment : ""}`}>
+                <div onClick={() => voiceFilter.available && modelState.status === "downloaded" && previewSoundURLs && playPreview(previewSoundURLs[0])} className={VoiceFilterStyles.iconTreatmentsWrapper}>
+                    <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available || modelState.status !== "downloaded" ? VoiceFilterStyles.underDevelopment : ""}`}>
                         <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
+                        {modelState.status === "not_downloaded" && <div className={VoiceFilterStyles.downloadIcon} onClick={async () => {
+                            // console.log("downloading voice filter", voiceFilter);
+                            setModelState({ status: "downloading", downloadedBytes: 0 });
+                            const res = await downloadCustomVoiceModel(voiceFilter);
+                            // console.log("downloadCustomVoiceFilter", res);
+                            if (res.success) {
+                                setModelState({ status: "downloaded", downloadedBytes: 0 });
+                            }
+                        }}><DownloadIcon /></div>}
+                        {modelState.status === "downloading" && <div className={VoiceFilterStyles.downloadIcon}><DownloadingIcon /></div>}
                         <div className={VoiceFilterStyles.insetBorder}></div>
                     </div>
                 </div>
@@ -109,7 +130,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                 </Text>
             </div>
 
-            {voiceFilter.available ? (
+            {voiceFilter.available && modelState.status === "downloaded" ? (
                 <>
                     <div onClick={() => updateById(id)} className={className} role="button" tabIndex={-1}>
                         <svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -134,5 +155,21 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                     </div>
                 </>) : <></>}
         </div>
+    );
+}
+
+function DownloadIcon(): JSX.Element {
+    return (
+        <svg className={VoiceFilterStyles.thumbnail} style={{ zoom: "0.7", margin: "auto", top: "0", left: "0", bottom: "0", right: "0" }} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path fill="white" d="M12 2a1 1 0 0 1 1 1v10.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1ZM3 20a1 1 0 1 0 0 2h18a1 1 0 1 0 0-2H3Z" className=""></path></svg>
+    );
+}
+
+function DownloadingIcon(): JSX.Element {
+    return (
+        <svg className={VoiceFilterStyles.thumbnail} style={{ zoom: "0.7", margin: "auto", top: "0", left: "0", bottom: "0", right: "0" }} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="white" />
+            <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="white" />
+            <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="white" />
+        </svg>
     );
 }

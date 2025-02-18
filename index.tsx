@@ -57,6 +57,7 @@ function indexedDBStorageFactory<T>() {
 
 export interface CustomVoiceFilterStore {
     voiceFilters: IVoiceFilterMap;
+    modulePath: string;
     set: (voiceFilters: IVoiceFilterMap) => void;
     updateById: (id: string) => void;
     deleteById: (id: string) => void;
@@ -65,7 +66,10 @@ export interface CustomVoiceFilterStore {
     exportIndividualVoice: (id: string) => void;
     importVoiceFilters: () => void;
     downloadVoicepack: (url: string) => void;
-    downloadVoiceModel: (voiceFilter: IVoiceFilter) => Promise<{ success: boolean, voiceFilter: IVoiceFilter, path: string | null; }>;
+    // downloadVoiceModel: (voiceFilter: IVoiceFilter) => Promise<{ success: boolean, voiceFilter: IVoiceFilter, path: string | null; }>;
+    // deleteVoiceModel: (voiceFilter: IVoiceFilter) => Promise<void>;
+    // deleteAllVoiceModels: () => Promise<void>;
+    // getVoiceModelState: (voiceFilter: IVoiceFilter) => Promise<{ status: string, downloadedBytes: number; }>;
     updateVoicesList: () => void;
 }
 
@@ -79,6 +83,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
     zustandPersist(
         (set: any, get: () => CustomVoiceFilterStore) => ({
             voiceFilters: {},
+            modulePath: "",
             set: (voiceFilters: IVoiceFilterMap) => set({ voiceFilters }),
             updateById: (id: string) => {
                 console.warn("updating voice filter:", id);
@@ -151,7 +156,10 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                         if (!secureUrl.startsWith("https://")) {
                             throw new Error("Invalid URL: Must use HTTPS protocol");
                         }
-                        const response = await fetch(secureUrl);
+                        const date = new Date().getTime();
+                        const downloadUrl = secureUrl.includes("?") ? "&v=" + date : "?v=" + date;
+                        console.log("Downloading voice model from URL:", secureUrl + downloadUrl);
+                        const response = await fetch(secureUrl + downloadUrl);
                         if (!response.ok) {
                             throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
                         }
@@ -187,10 +195,22 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                     openErrorModal(error instanceof Error ? error.message : "Failed to process voice pack");
                 }
             },
-            downloadVoiceModel: async (voiceFilter: IVoiceFilter) => {
-                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-                return Native.downloadCustomVoiceFilter(DiscordNative.fileManager.getModulePath(), voiceFilter);
-            },
+            // downloadVoiceModel: async (voiceFilter: IVoiceFilter) => {
+            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+            //     return Native.downloadCustomVoiceFilter(DiscordNative.fileManager.getModulePath(), voiceFilter);
+            // },
+            // deleteVoiceModel: async (voiceFilter: IVoiceFilter) => {
+            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+            //     return Native.deleteModel(DiscordNative.fileManager.getModulePath(), voiceFilter.id);
+            // },
+            // deleteAllVoiceModels: async () => {
+            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+            //     return Native.deleteAllModels(DiscordNative.fileManager.getModulePath());
+            // },
+            // getVoiceModelState: async (voiceFilter: IVoiceFilter) => {
+            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+            //     return Native.getModelState(voiceFilter.id, DiscordNative.fileManager.getModulePath());
+            // },
             updateVoicesList: async () => {
                 // Move the object declaration to a separate variable first
                 const voiceFilterState = {
@@ -314,21 +334,48 @@ export default definePlugin({
 
         useVoiceFiltersStore.subscribe(store => store.updateVoicesList());
 
-        // ============ DEMO ============
-        const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-        console.log("Natives modules:", Native, DiscordNative);
         const modulePath = await DiscordNative.fileManager.getModulePath();
-        console.log("Module path:", modulePath);
-        const { success, voiceFilter, path } = await Native.downloadCustomVoiceFilter(modulePath, JSON.parse(templateVoicepack));
-        console.log("Voice model debug output:", { success, voiceFilter, path });
-        if (success) {
-            console.log("Voice model downloaded to:", path);
-        } else {
-            console.error("Failed to download voice model");
-        }
-        // ============ DEMO ============
+        useVoiceFiltersStore.getState().modulePath = modulePath;
+
+        // // ============ DEMO ============
+        // const templaceVoicePackObject: IVoiceFilter = JSON.parse(templateVoicepack);
+        // const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+        // console.log("Natives modules:", Native, DiscordNative);
+        // console.log("Module path:", modulePath);
+        // console.log("Downloading template voice model...");
+        // const { success, voiceFilter, path } = await Native.downloadCustomVoiceFilter(modulePath, templaceVoicePackObject);
+        // console.log("Voice model debug output:", { success, voiceFilter, path });
+        // if (success) {
+        //     console.log("Voice model downloaded to:", path);
+        // } else {
+        //     console.error("Failed to download voice model");
+        // }
+        // console.log("Getting model state...");
+        // const modelState = await Native.getModelState(templaceVoicePackObject.id, modulePath);
+        // console.log("Model state:", modelState);
+        // console.log("Getting dummy model state...");
+        // const dummyModelState = await Native.getModelState("dummy", modulePath);
+        // console.log("Dummy model state:", dummyModelState);
+        // // ============ DEMO ============
     },
     stop() {
         console.log("CustomVoiceFilters stopped");
     },
 });
+
+export async function downloadCustomVoiceModel(voiceFilter: IVoiceFilter) {
+    const modulePath = await DiscordNative.fileManager.getModulePath();
+    const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+    const { status } = await Native.getModelState(voiceFilter.id, modulePath);
+    if (status === "downloaded") {
+        return { success: true, voiceFilter, path: modulePath + "/discord_voice_filters/" + voiceFilter.id + ".onnx", response: null };
+    } else {
+        console.log("Downloading voice model from URL:", voiceFilter.onnxFileUrl);
+        const response = await fetch(voiceFilter.onnxFileUrl);
+        const buffer = await response.arrayBuffer();
+        console.log("Downloading voice model from buffer:", buffer);
+        const response2 = await Native.downloadCustomVoiceFilterFromBuffer(modulePath, voiceFilter, buffer);
+        // console.log("Downloaded voice model from buffer:", response2);
+        return { success: response2.success, voiceFilter, path: response2.path };
+    }
+}

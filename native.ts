@@ -24,7 +24,8 @@ interface IVoiceFilter {
 }
 
 const fs = require("fs");
-export async function downloadCustomVoiceFilter(_: IpcMainInvokeEvent, modulePath: string, voiceFilter: IVoiceFilter) {
+
+export async function downloadCustomVoiceFilter(_: IpcMainInvokeEvent, modulePath: string, voiceFilter: IVoiceFilter): Promise<{ success: boolean, voiceFilter: IVoiceFilter, path: string | null, response: Response | null; }> {
     if (!fs.existsSync(modulePath + "/discord_voice_filters")) {
         fs.mkdirSync(modulePath + "/discord_voice_filters");
     }
@@ -34,17 +35,55 @@ export async function downloadCustomVoiceFilter(_: IpcMainInvokeEvent, modulePat
     ) {
         return {
             success: false,
+            response: null,
             voiceFilter: voiceFilter,
             path: null
         };
     }
-    const res = await fetch(voiceFilter.onnxFileUrl);
-    const blob = await res.arrayBuffer();
-    fs.writeFileSync(modulePath + "/discord_voice_filters/" + voiceFilter.id + ".onnx", Buffer.from(blob));
+    const response = await fetch(voiceFilter.onnxFileUrl);
+    if (!response.ok) {
+        return {
+            success: false,
+            response: response,
+            voiceFilter: voiceFilter,
+            path: null
+        };
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    fs.writeFileSync(modulePath + "/discord_voice_filters/" + voiceFilter.id + ".onnx", Buffer.from(arrayBuffer));
+    return {
+        success: true,
+        response: response,
+        voiceFilter: voiceFilter,
+        path: modulePath + "/discord_voice_filters/" + voiceFilter.id + ".onnx"
+    };
+}
+
+export async function downloadCustomVoiceFilterFromBuffer(_: IpcMainInvokeEvent, modulePath: string, voiceFilter: IVoiceFilter, buffer: ArrayBuffer) {
+    if (!fs.existsSync(modulePath + "/discord_voice_filters")) {
+        fs.mkdirSync(modulePath + "/discord_voice_filters");
+    }
+    fs.writeFileSync(modulePath + "/discord_voice_filters/" + voiceFilter.id + ".onnx", Buffer.from(buffer));
     return {
         success: true,
         voiceFilter: voiceFilter,
         path: modulePath + "/discord_voice_filters/" + voiceFilter.id + ".onnx"
     };
 }
+export async function getModelState(_: IpcMainInvokeEvent, id: string, modulePath: string) {
+    const modelPath = modulePath + "/discord_voice_filters/";
+    return {
+        status: fs.existsSync(modelPath + id + ".onnx") ? "downloaded" : "not_downloaded",
+        downloadedBytes: fs.existsSync(modelPath + id + ".onnx") ? fs.statSync(modelPath + id + ".onnx").size : 0
+    };
+}
 
+export async function deleteModel(_: IpcMainInvokeEvent, modulePath: string, id: string) {
+    const modelPath = modulePath + "/discord_voice_filters/";
+    fs.unlinkSync(modelPath + id + ".onnx");
+}
+
+export async function deleteAllModels(_: IpcMainInvokeEvent, modulePath: string) {
+    const modelPath = modulePath + "/discord_voice_filters/";
+    fs.rmSync(modelPath, { recursive: true, force: true });
+}
