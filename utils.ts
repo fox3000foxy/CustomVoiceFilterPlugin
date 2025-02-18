@@ -15,7 +15,7 @@ export function downloadFile(name: string, data: string): void {
 
 let voicePlayingAudio: HTMLAudioElement | null;
 
-export function playPreview(url: string): void {
+export function playPreview(url: string, cb: () => void): void {
     if (voicePlayingAudio) {
         voicePlayingAudio.pause();
         voicePlayingAudio.currentTime = 0;
@@ -26,4 +26,5 @@ export function playPreview(url: string): void {
         voicePlayingAudio = new Audio(url);
         voicePlayingAudio.play();
     }
+    voicePlayingAudio.addEventListener("ended", cb);
 }

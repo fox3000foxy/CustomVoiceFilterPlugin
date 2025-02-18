@@ -98,6 +98,8 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     const { updateById, deleteById, exportIndividualVoice, modulePath } = useVoiceFiltersStore();
     const className = `${VoiceFilterStyles.hoverButtonCircle} ${VoiceFilterStyles.previewButton}`;
     const [modelState, setModelState] = useState({ status: "not_downloaded", downloadedBytes: 0 });
+    const [isPlaying, setIsPlaying] = useState(false);
+
     useEffect(() => {
         const fetchModelState = async () => {
             const modelState = await Native.getModelState(voiceFilter.id, modulePath);
@@ -120,14 +122,15 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
             <div className={`${VoiceFilterStyles.selector} ${VoiceFilterStyles.selector}`} role="button" tabIndex={0}>
                 <div className={VoiceFilterStyles.iconTreatmentsWrapper}>
                     <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available || modelState.status !== "downloaded" ? VoiceFilterStyles.underDevelopment : ""}`}>
-                        <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} onClick={() => {
+                        <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
+                        {voiceFilter.available && modelState.status === "not_downloaded" && <div><DownloadIcon /></div>}
+                        {voiceFilter.available && modelState.status === "downloading" && <div><DownloadingIcon /></div>}
+                        {voiceFilter.available && modelState.status === "downloaded" && <div onClick={() => {
                             if (modelState.status === "downloaded" && previewSoundURLs) {
-                                playPreview(previewSoundURLs[0]);
+                                playPreview(previewSoundURLs[0], () => setIsPlaying(false));
+                                setIsPlaying(true);
                             }
-                        }} />
-                        {voiceFilter.available && modelState.status === "not_downloaded" && <div className={VoiceFilterStyles.downloadIcon}><DownloadIcon /></div>}
-                        {voiceFilter.available && modelState.status === "downloading" && <div className={VoiceFilterStyles.downloadIcon}><DownloadingIcon /></div>}
-                        <div className={VoiceFilterStyles.insetBorder}></div>
+                        }}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</div>}
                     </div>
                 </div>
                 <Text variant="text-xs/medium" className={VoiceFilterStyles.filterName}>
@@ -166,7 +169,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
 function DownloadIcon(): JSX.Element {
     return (
         <svg className={VoiceFilterStyles.thumbnail} style={{ zoom: "0.4", margin: "auto", top: "0", left: "0", bottom: "0", right: "0" }} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path fill="white" stroke="black" strokeWidth="1" d="M12 2a1 1 0 0 1 1 1v10.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1ZM3 20a1 1 0 1 0 0 2h18a1 1 0 1 0 0-2H3Z" className=""></path>
+            <path fill="white" d="M12 2a1 1 0 0 1 1 1v10.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1ZM3 20a1 1 0 1 0 0 2h18a1 1 0 1 0 0-2H3Z" className=""></path>
         </svg>
     );
 }
@@ -179,5 +182,23 @@ function DownloadingIcon(): JSX.Element {
             <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="3s" repeatCount="indefinite" />
         </svg>
 
+    );
+}
+
+function PlayIcon(): JSX.Element {
+    return (
+
+        <svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" className={`${VoiceFilterStyles.thumbnail} ${VoiceFilterStyles.hoverButtonCircle}`} style={{ margin: "auto", top: "0", left: "0", bottom: "0", right: "0", width: "32px", height: "32px", padding: "24px", transform: "0px 0px" }} fill="none" viewBox="0 0 24 24">
+            <path fill="white" d="M9.25 3.35C7.87 2.45 6 3.38 6 4.96v14.08c0 1.58 1.87 2.5 3.25 1.61l10.85-7.04a1.9 1.9 0 0 0 0-3.22L9.25 3.35Z" className=""></path>
+        </svg>
+
+    );
+}
+
+function PauseIcon(): JSX.Element {
+    return (
+        <svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" className={`${VoiceFilterStyles.thumbnail} ${VoiceFilterStyles.hoverButtonCircle}`} style={{ margin: "auto", top: "0", left: "0", bottom: "0", right: "0", width: "32px", height: "32px", padding: "24px", transform: "0px 0px" }} fill="none" viewBox="0 0 24 24">
+            <path fill="white" d="M6 4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H6ZM15 4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-3Z" className=""></path>
+        </svg>
     );
 }
