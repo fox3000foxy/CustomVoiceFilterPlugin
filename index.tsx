@@ -231,7 +231,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
 
                 const { voiceFilters } = get();
                 Object.values(voiceFilters).forEach(voice => {
-                    voiceFilterState.voiceFilters[++i] = { ...voice, id: i, temporarilyAvailable: false, name: voice.available ? "🛠️ " + voice.name : " 🛠️" + voice.name, available: voice.available, previewSoundURLs: voice.available ? voice.previewSoundURLs : [] };
+                    voiceFilterState.voiceFilters[++i] = { ...voice, id: i, temporarilyAvailable: false, previewSoundURLs: voice.available ? voice.previewSoundURLs : [] };
                 });
 
                 voiceFilterState.sortedVoiceFilters = Object.keys(voiceFilterState.voiceFilters);
