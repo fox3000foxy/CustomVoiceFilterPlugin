@@ -8,11 +8,11 @@ import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, M
 import { PluginNative } from "@utils/types";
 import { Button, Flex, Forms, Text, TextInput, useEffect, useState } from "@webpack/common";
 import { JSX } from "react";
+import { useAudio } from "userplugins/CustomVoiceFilterPlugin/utils";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
 import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
-import { playPreview } from "./utils";
 
 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
 
@@ -95,8 +95,9 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     const { updateById, deleteById, exportIndividualVoice, modulePath } = useVoiceFiltersStore();
     const className = `${VoiceFilterStyles.hoverButtonCircle} ${VoiceFilterStyles.previewButton}`;
     const [modelState, setModelState] = useState({ status: "not_downloaded", downloadedBytes: 0 });
-    const [isPlaying, setIsPlaying] = useState(false);
     const { client } = getClient();
+    const { playSound, isPlaying, stopSound } = useAudio({ source: previewSoundURLs?.[0] });
+
     useEffect(() => {
         const fetchModelState = async () => {
             if (client === "desktop") {
@@ -125,12 +126,9 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                         <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
                         {client === "desktop" && voiceFilter.available && modelState.status === "not_downloaded" && <div><DownloadIcon /></div>}
                         {client === "desktop" && voiceFilter.available && modelState.status === "downloading" && <div><DownloadingIcon /></div>}
-                        {((client === "desktop" && voiceFilter.available && modelState.status === "downloaded") || (client === "web" && voiceFilter.available)) && <div onClick={() => {
-                            if (previewSoundURLs) {
-                                playPreview(previewSoundURLs[0], () => setIsPlaying(false));
-                                setIsPlaying(true);
-                            }
-                        }}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</div>}
+                        {((client === "desktop" && voiceFilter.available && modelState.status === "downloaded") || (client === "web" && voiceFilter.available)) && <div onClick={() =>
+                            isPlaying ? stopSound() : playSound()
+                        }>{isPlaying ? <PauseIcon /> : <PlayIcon />}</div>}
                     </div>
                 </div>
                 <Text variant="text-xs/medium" className={VoiceFilterStyles.filterName}>
