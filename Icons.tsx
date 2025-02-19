@@ -8,8 +8,8 @@ import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { JSX } from "react";
 
 import { VoiceFilterStyles } from "./index";
-import { openVoiceFiltersModal } from "./VoiceFiltersModal";
-
+// import { openVoiceFiltersModal } from "./VoiceFiltersModal";
+import { openWikiHomeModal } from "./WikiHomeModal";
 export function DownloadIcon(): JSX.Element {
     return (
         <svg className={VoiceFilterStyles.thumbnail} style={{ zoom: "0.4", margin: "auto", top: "0", left: "0", bottom: "0", right: "0" }} aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -66,7 +66,8 @@ export const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = ({ isMainChat 
     return (
         <ChatBarButton
             tooltip="Open Custom Voice Filter Menu"
-            onClick={openVoiceFiltersModal}
+            // onClick={openVoiceFiltersModal}
+            onClick={openWikiHomeModal}
             buttonProps={{
                 "aria-haspopup": "dialog"
             }}
