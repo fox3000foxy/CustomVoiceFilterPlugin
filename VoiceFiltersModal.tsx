@@ -8,11 +8,11 @@ import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, M
 import { PluginNative } from "@utils/types";
 import { Button, Flex, Forms, Text, TextInput, useEffect, useState } from "@webpack/common";
 import { JSX } from "react";
-import { useAudio } from "userplugins/CustomVoiceFilterPlugin/utils";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
 import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
+import { useAudio } from "./utils";
 
 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
 
