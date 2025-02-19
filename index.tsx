@@ -379,3 +379,17 @@ export async function downloadCustomVoiceModel(voiceFilter: IVoiceFilter) {
         return { success: response2.success, voiceFilter, path: response2.path };
     }
 }
+
+export function getClient() {
+    const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+    try {
+        if (Native !== undefined) {
+            return { success: true, client: "desktop" };
+        } else {
+            return { success: true, client: "web" };
+        }
+    } catch (error) {
+        return { success: false, client: null };
+    }
+}
+

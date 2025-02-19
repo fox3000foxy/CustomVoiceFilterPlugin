@@ -11,7 +11,7 @@ import { JSX } from "react";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
-import { downloadCustomVoiceModel, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
+import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { playPreview } from "./utils";
 
 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
@@ -39,7 +39,7 @@ interface VoiceFiltersModalProps {
 function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps): JSX.Element {
     const [url, setUrl] = useState("");
     const { downloadVoicepack, deleteAll, exportVoiceFilters, importVoiceFilters, voiceFilters } = useVoiceFiltersStore();
-
+    const { client } = getClient();
     const voiceComponents = Object.values(voiceFilters).map(voice =>
         <VoiceFilter {...voice} key={voice.id} />
     );
@@ -74,6 +74,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                     <Flex style={{ gap: "0.5rem" }} wrap={Flex.Wrap.WRAP}>
                         {voiceComponents.length > 0 ? voiceComponents : <Text style={{ fontStyle: "italic" }}>No voice filters found</Text>}
                     </Flex>
+                    {client === "web" && <Text style={{ fontStyle: "italic" }}>⚠️ Voices filters are not available on web client or vesktop! Please use the desktop client to use custom voice filters.</Text>}
                 </Flex>
             </ModalContent>
             <ModalFooter>
@@ -95,7 +96,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     const className = `${VoiceFilterStyles.hoverButtonCircle} ${VoiceFilterStyles.previewButton}`;
     const [modelState, setModelState] = useState({ status: "not_downloaded", downloadedBytes: 0 });
     const [isPlaying, setIsPlaying] = useState(false);
-
+    const { client } = getClient();
     useEffect(() => {
         const fetchModelState = async () => {
             const modelState = await Native.getModelState(voiceFilter.id, modulePath);
@@ -109,7 +110,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
             if (!voiceFilter.available) return;
 
             // download and preview if downloaded
-            if (modelState.status === "not_downloaded") {
+            if (client === "desktop" && modelState.status === "not_downloaded") {
                 setModelState({ status: "downloading", downloadedBytes: 0 });
                 const res = await downloadCustomVoiceModel(voiceFilter);
                 if (res.success) setModelState({ status: "downloaded", downloadedBytes: 0 });
@@ -117,12 +118,13 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
         }}>
             <div className={`${VoiceFilterStyles.selector} ${VoiceFilterStyles.selector}`} role="button" tabIndex={0}>
                 <div className={VoiceFilterStyles.iconTreatmentsWrapper}>
-                    <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available || modelState.status !== "downloaded" ? VoiceFilterStyles.underDevelopment : ""}`}>
+                    <div className={`${VoiceFilterStyles.profile} ${!voiceFilter.available || (client === "desktop" && modelState.status !== "downloaded") ? VoiceFilterStyles.underDevelopment : ""
+                        }`}>
                         <img className={VoiceFilterStyles.thumbnail} alt="" src={iconURL ?? ""} draggable={false} />
-                        {voiceFilter.available && modelState.status === "not_downloaded" && <div><DownloadIcon /></div>}
-                        {voiceFilter.available && modelState.status === "downloading" && <div><DownloadingIcon /></div>}
-                        {voiceFilter.available && modelState.status === "downloaded" && <div onClick={() => {
-                            if (modelState.status === "downloaded" && previewSoundURLs) {
+                        {client === "desktop" && voiceFilter.available && modelState.status === "not_downloaded" && <div><DownloadIcon /></div>}
+                        {client === "desktop" && voiceFilter.available && modelState.status === "downloading" && <div><DownloadingIcon /></div>}
+                        {((client === "desktop" && voiceFilter.available && modelState.status === "downloaded") || (client === "web" && voiceFilter.available)) && <div onClick={() => {
+                            if (previewSoundURLs) {
                                 playPreview(previewSoundURLs[0], () => setIsPlaying(false));
                                 setIsPlaying(true);
                             }
@@ -134,7 +136,7 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
                 </Text>
             </div>
 
-            {voiceFilter.available && modelState.status === "downloaded" ? (
+            {voiceFilter.available && ((client === "desktop" && modelState.status === "downloaded") || (client === "web")) ? (
                 <>
                     <div onClick={() => updateById(id)} className={className} role="button" tabIndex={-1}>
                         <svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
