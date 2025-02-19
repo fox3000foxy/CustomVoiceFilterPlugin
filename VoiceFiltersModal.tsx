@@ -99,8 +99,10 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
     const { client } = getClient();
     useEffect(() => {
         const fetchModelState = async () => {
-            const modelState = await Native.getModelState(voiceFilter.id, modulePath);
-            setModelState(modelState);
+            if (client === "desktop") {
+                const modelState = await Native.getModelState(voiceFilter.id, modulePath);
+                setModelState(modelState);
+            }
         };
         fetchModelState();
     }, [modulePath]);
