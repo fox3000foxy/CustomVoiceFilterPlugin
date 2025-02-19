@@ -5,7 +5,6 @@
  */
 
 // Imports
-import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { DataStore } from "@api/index";
 import { proxyLazy } from "@utils/lazy";
 import { closeModal } from "@utils/modal";
@@ -15,9 +14,8 @@ import { zustandCreate, zustandPersist } from "@webpack/common";
 
 import { openConfirmModal } from "./ConfirmModal";
 import { openErrorModal } from "./ErrorModal";
+import { CustomVoiceFilterChatBarIcon } from "./Icons";
 import { downloadFile } from "./utils";
-import { openVoiceFiltersModal } from "./VoiceFiltersModal";
-
 export let voices: any = null;
 export let VoiceFilterStyles: any = null; // still 'skye'
 export let VoiceFilterStore: any = null;
@@ -287,35 +285,6 @@ export const requiredFields = [
     "available",
     "temporarilyAvailable"
 ] as const;
-
-
-// Custom Voice Filter Icon
-function CustomVoiceFilterIcon({ className }: { className?: string; }) {
-    return (
-        <svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path d="m19.7.3 4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 0 1-1.4-1.4L20.58 6H15a1 1 0 1 1 0-2h5.59l-2.3-2.3A1 1 0 0 1 19.71.3Z" fill="currentColor" className=""></path>
-            <path d="M12.62 2.05c.41.06.46.61.17.92A3 3 0 0 0 15 8h.51c.28 0 .5.22.5.5V10a4 4 0 1 1-8 0V6a4 4 0 0 1 4.62-3.95Z" fill="currentColor" className=""></path>
-            <path d="M17.56 12.27a.63.63 0 0 1 .73-.35c.21.05.43.08.65.08.38 0 .72.35.6.7A8 8 0 0 1 13 17.94V20h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.06A8 8 0 0 1 4 10a1 1 0 0 1 2 0 6 6 0 0 0 11.56 2.27Z" fill="white" className=""></path>
-        </svg>
-    );
-}
-
-// Custom Voice Filter Chat Bar Icon
-const CustomVoiceFilterChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
-    if (!isMainChat) return null;
-
-    return (
-        <ChatBarButton
-            tooltip="Open Custom Voice Filter Menu"
-            onClick={openVoiceFiltersModal}
-            buttonProps={{
-                "aria-haspopup": "dialog"
-            }}
-        >
-            <CustomVoiceFilterIcon className={"chat-button"} />
-        </ChatBarButton>
-    );
-};
 
 export default definePlugin({
     name: "CustomVoiceFilters",
