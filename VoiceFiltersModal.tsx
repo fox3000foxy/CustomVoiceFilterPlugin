@@ -14,6 +14,7 @@ import { openHelpModal } from "./HelpModal";
 import { DownloadIcon, DownloadingIcon, PauseIcon, PlayIcon } from "./Icons";
 import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { useAudio } from "./utils";
+import { openWikiHomeModal } from "./WikiHomeModal";
 
 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
 
@@ -82,6 +83,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                 <Flex style={{ gap: "0.5rem" }} justify={Flex.Justify.END} align={Flex.Align.CENTER}>
                     <Button color={Button.Colors.TRANSPARENT} onClick={openHelpModal}>Learn how to build your own voicepack</Button>
                     <Button color={Button.Colors.TRANSPARENT} onClick={() => openCreateVoiceModal()}>Create Voicepack</Button>
+                    <Button color={Button.Colors.GREEN} onClick={openWikiHomeModal}>Wiki</Button>
                     <Button color={Button.Colors.RED} onClick={accept}>Close</Button>
                 </Flex>
             </ModalFooter >
