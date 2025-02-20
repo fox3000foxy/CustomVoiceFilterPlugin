@@ -6,6 +6,7 @@
 
 // Imports
 import { DataStore } from "@api/index";
+import { Devs } from "@utils/constants";
 import { proxyLazy } from "@utils/lazy";
 import { closeModal } from "@utils/modal";
 import definePlugin, { PluginNative } from "@utils/types";
@@ -290,8 +291,8 @@ export default definePlugin({
     name: "CustomVoiceFilters",
     description: "Custom voice filters for your voice channels.",
     authors: [
-        { name: "fox3000foxy.new", id: 724847846897221642n },
-        { name: "davr1", id: 457579346282938368n },
+        Devs.fox3000foxy,
+        Devs.davr1,
     ],
     renderChatBarButton: CustomVoiceFilterChatBarIcon,
     async start() {
@@ -344,7 +345,6 @@ export async function downloadCustomVoiceModel(voiceFilter: IVoiceFilter) {
         const buffer = await response.arrayBuffer();
         console.log("Downloading voice model from buffer:", buffer);
         const response2 = await Native.downloadCustomVoiceFilterFromBuffer(modulePath, voiceFilter, buffer);
-        // console.log("Downloaded voice model from buffer:", response2);
         return { success: response2.success, voiceFilter, path: response2.path };
     }
 }
