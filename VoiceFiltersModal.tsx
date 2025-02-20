@@ -14,6 +14,7 @@ import { openHelpModal } from "./HelpModal";
 import { DownloadIcon, DownloadingIcon, PauseIcon, PlayIcon } from "./Icons";
 import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { useAudio } from "./utils";
+import { openWikiHomeModal } from "./WikiHomeModal";
 
 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
 
@@ -75,13 +76,18 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                     <Flex style={{ gap: "0.5rem" }} wrap={Flex.Wrap.WRAP}>
                         {voiceComponents.length > 0 ? voiceComponents : <Text style={{ fontStyle: "italic" }}>No voice filters found</Text>}
                     </Flex>
-                    {client === "web" && <Text style={{ fontStyle: "italic" }}>⚠️ Voices filters are not available on web client or vesktop! Please use the desktop client to use custom voice filters.</Text>}
+                    {client === "web" && <Text style={{ fontStyle: "italic" }}>⚠️ Voice filters are not available on web client or vesktop! Please use the desktop client to use custom voice filters.</Text>}
+                    {/* Temporary message about the experiment rollout */}
+                    <Text style={{ fontStyle: "italic" }}>
+                        ⚠️ Voice filters are currently in experimental rollout. So things may not work as expected. However, you can still create and download voicepacks.
+                    </Text>
                 </Flex>
             </ModalContent>
             <ModalFooter>
                 <Flex style={{ gap: "0.5rem" }} justify={Flex.Justify.END} align={Flex.Align.CENTER}>
                     <Button color={Button.Colors.TRANSPARENT} onClick={openHelpModal}>Learn how to build your own voicepack</Button>
                     <Button color={Button.Colors.TRANSPARENT} onClick={() => openCreateVoiceModal()}>Create Voicepack</Button>
+                    <Button color={Button.Colors.GREEN} onClick={openWikiHomeModal}>Wiki</Button>
                     <Button color={Button.Colors.RED} onClick={accept}>Close</Button>
                 </Flex>
             </ModalFooter >
