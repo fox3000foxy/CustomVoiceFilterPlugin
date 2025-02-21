@@ -7,12 +7,12 @@
 import { PencilIcon } from "@components/Icons";
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { PluginNative } from "@utils/types";
-import { Button, Flex, Forms, Text, TextInput, useEffect, useState } from "@webpack/common";
+import { Button, Flex, Forms, Text, TextInput, Tooltip, useEffect, useState } from "@webpack/common";
 import { JSX } from "react";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
-import { DownloadIcon, DownloadingIcon, PauseIcon, PlayIcon, RefreshIcon, SaveIcon, TrashIcon } from "./Icons";
+import { DownloadIcon, DownloadingIcon, PauseIcon, PlayIcon, RefreshIcon, TrashIcon } from "./Icons";
 import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
 import { cl, useAudio } from "./utils";
 import { openWikiHomeModal } from "./WikiHomeModal";
@@ -162,18 +162,34 @@ function VoiceFilter(voiceFilter: IVoiceFilter): JSX.Element {
 
             {voiceFilter.available && ((client === "desktop" && modelState.status === "downloaded") || (client === "web")) && (
                 <>
-                    <div onClick={() => updateById(id)} className={className} role="button" tabIndex={-1}>
-                        <RefreshIcon width={16} height={16} />
-                    </div>
-                    <div onClick={() => deleteById(id)} className={className} role="button" tabIndex={-1} style={{ left: "65px" }}>
-                        <TrashIcon width={16} height={16} style={{ color: "#f44" }} />
-                    </div>
-                    <div onClick={() => exportIndividualVoice(id)} className={className} role="button" tabIndex={-1} style={{ top: "65px" }}>
-                        <SaveIcon width={16} height={16} />
-                    </div>
-                    <div onClick={() => openCreateVoiceModal(voiceFilter)} className={className} role="button" tabIndex={-1} style={{ top: "65px", left: "65px" }}>
-                        <PencilIcon width={16} height={16} />
-                    </div>
+                    <Tooltip text="Update">
+                        {({ ...props }) =>
+                            <div className={className} role="button" tabIndex={-1} {...props} onClick={() => updateById(id)}>
+                                <RefreshIcon width={16} height={16} />
+                            </div>
+                        }
+                    </Tooltip>
+                    <Tooltip text="Delete">
+                        {({ ...props }) =>
+                            <div className={className} role="button" tabIndex={-1} style={{ left: "65px" }} {...props} onClick={() => deleteById(id)}>
+                                <TrashIcon width={16} height={16} style={{ color: "#f44" }} />
+                            </div>
+                        }
+                    </Tooltip>
+                    <Tooltip text="Export">
+                        {({ ...props }) =>
+                            <div className={className} role="button" tabIndex={-1} style={{ top: "65px" }} {...props} onClick={() => exportIndividualVoice(id)}>
+                                <DownloadIcon width={16} height={16} />
+                            </div>
+                        }
+                    </Tooltip>
+                    <Tooltip text="Edit">
+                        {({ ...props }) =>
+                            <div className={className} role="button" tabIndex={-1} style={{ top: "65px", left: "65px" }} {...props} onClick={() => openCreateVoiceModal(voiceFilter)} >
+                                <PencilIcon width={16} height={16} />
+                            </div>
+                        }
+                    </Tooltip>
                 </>
             )}
         </div>
