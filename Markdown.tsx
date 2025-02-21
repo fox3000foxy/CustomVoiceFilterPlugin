@@ -7,9 +7,11 @@
 import { proxyLazy } from "@utils/lazy";
 import { findByCode, findByProps, findByPropsLazy } from "@webpack";
 import { Parser } from "@webpack/common";
+import { JSX } from "react";
 
 import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
+import { cl } from "./utils";
 import { openVoiceFiltersModal } from "./VoiceFiltersModal";
 
 interface MarkdownRules {
@@ -40,7 +42,7 @@ const MarkdownContainerClasses = findByPropsLazy("markup", "codeContainer");
 const modalLinkRegex = /^<vf:(help|createVoice|main)>/;
 const imageRegex = /^!\[((?:\[[^\]]*\]|[^[\]]|\](?=[^[]*\]))*)\]\(\s*((?:\([^)]*\)|[^\s\\]|\\.)*?)\)/;
 
-const modals: Record<string, { action: () => string, name: string; }> = {
+const actions: Record<string, { action: () => string, name: string; }> = {
   help: {
     action: openHelpModal,
     name: "Help menu"
@@ -52,7 +54,7 @@ const modals: Record<string, { action: () => string, name: string; }> = {
   main: {
     action: openVoiceFiltersModal,
     name: "Main menu"
-  }
+  },
 };
 
 const parser: typeof Parser.parse = proxyLazy(() => {
@@ -63,7 +65,7 @@ const parser: typeof Parser.parse = proxyLazy(() => {
     modalLink: {
       order: DiscordRules.staticRouteLink,
       match: source => modalLinkRegex.exec(source),
-      parse: ([, target]) => (modals[target]),
+      parse: ([, target]) => (actions[target]),
       react: ({ action, name }) => (
         <span className="channelMention interactive vc-voice-filters-modal-link" role="link" onClick={action}>{name}</span>
       ),
@@ -89,19 +91,17 @@ const parser: typeof Parser.parse = proxyLazy(() => {
     };
   }
 
-  console.log(customRules);
-
   return (Parser as any).reactParserFor(customRules);
 });
 
-interface MarkdownProps {
+interface MarkdownProps extends Omit<JSX.IntrinsicElements["div"], "children"> {
   content: string;
   markdownRules?: Partial<MarkdownRules>;
 }
 
 
-export function Markdown({ content, markdownRules = defaultRules }: MarkdownProps) {
-  return <div className={`${MarkdownContainerClasses.markup} vc-voice-filters-md`}>
+export function Markdown({ content, markdownRules = defaultRules, className, ...props }: MarkdownProps) {
+  return <div className={cl(MarkdownContainerClasses.markup, "vc-voice-filters-md", className)} {...props}>
     {parser(content, false, markdownRules)}
   </div>;
 }

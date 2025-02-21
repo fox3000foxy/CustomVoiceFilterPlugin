@@ -7,7 +7,9 @@
 import { closeModal, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, ModalSize, openModal } from "@utils/modal";
 import { Button, Card, Flex, Forms, Text, useState } from "@webpack/common";
 
+import { ChevronIcon } from "./Icons";
 import { Markdown } from "./Markdown";
+import { cl } from "./utils";
 
 interface Section {
     title: string;
@@ -62,7 +64,7 @@ export function WikiHomeModal({ modalProps, close, accept }: WikiHomeModalProps)
                 </Forms.FormTitle>
                 <ModalCloseButton onClick={close} />
             </ModalHeader>
-            <ModalContent style={{ paddingBlock: "0.5rem" }}>
+            <ModalContent className="vc-voice-filters-modal">
                 <Flex style={{ gap: "0.5rem" }} direction={Flex.Direction.VERTICAL}>
                     <Text>Here are some tutorials and guides about the Custom Voice Filter Plugin:</Text>
 
@@ -101,12 +103,13 @@ function CollapsibleCard({ title, content }: CollapsibleCardProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Card className="vc-voice-filters-card">
-            <Card onClick={() => setIsOpen(!isOpen)} style={{ cursor: "pointer", background: "var(--background-primary)", padding: "10px" }}>
-                <Text style={{ fontSize: "18px", fontWeight: "bold" }}>{title}</Text>
+        <Card className={cl("vc-voice-filters-card", isOpen && "vc-voice-filters-card-open")} style={{ background: "var(--background-secondary)" }}>
+            <Card className="vc-voice-filters-card-title" onClick={() => setIsOpen(!isOpen)}>
+                <Text variant="heading-md/semibold">{title}</Text>
+                <ChevronIcon className="vc-voice-filters-card-icon" />
             </Card>
-            {isOpen && <Markdown content={content} />}
-        </Card>
+            <Markdown content={content} className="vc-voice-filters-details" />
+        </Card >
     );
 }
 

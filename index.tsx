@@ -19,7 +19,7 @@ import { openConfirmModal } from "./ConfirmModal";
 import { openErrorModal } from "./ErrorModal";
 import { CustomVoiceFilterChatBarIcon } from "./Icons";
 import { downloadFile } from "./utils";
-export let voices: any = null;
+export let voices: Record<string, IVoiceFilter> | null = null;
 export let VoiceFilterStyles: any = null; // still 'skye'
 export let VoiceFilterStore: any = null;
 
@@ -225,10 +225,11 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 };
 
                 let i = 0;
-                for (const [, val] of Object.entries(voices) as [string, IVoiceFilter][]) {
-                    if (!Object.values(voiceFilterState.voiceFilters).find(x => x.name === val.name))
-                        voiceFilterState.voiceFilters[++i] = { ...val, id: i, available: true, temporarilyAvailable: false };
-                }
+                if (voices)
+                    for (const [, val] of Object.entries(voices) as [string, IVoiceFilter][]) {
+                        if (!Object.values(voiceFilterState.voiceFilters).find(x => x.name === val.name))
+                            voiceFilterState.voiceFilters[++i] = { ...val, id: i, available: true, temporarilyAvailable: false };
+                    }
 
                 const { voiceFilters } = get();
                 Object.values(voiceFilters).forEach(voice => {

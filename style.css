@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding-inline: 1.2rem;
 }
 
 .vc-voice-filters-md-image {
@@ -25,8 +24,24 @@
 }
 
 .vc-voice-filters-card {
-  background: var(--background-secondary);
   width: 100%;
+
+  .vc-voice-filters-card-title {
+    cursor: pointer;
+    background: var(--background-primary);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .vc-voice-filters-card-icon {
+    transition: all 100ms ease-in-out;
+  }
+
+  &.vc-voice-filters-card-open .vc-voice-filters-card-icon {
+    transform: rotate(180deg);
+  }
 }
 
 .vc-voice-filters-modal-link {
@@ -38,4 +53,25 @@
   background: var(--mention-background);
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.vc-voice-filters-details {
+  interpolate-size: allow-keywords;
+  transition: all 100ms ease-in-out;
+  overflow-y: hidden;
+  height: 0;
+  padding-inline: 1.2rem;
+
+  .vc-voice-filters-card-open & {
+    height: auto;
+  }
+}
+
+.vc-voice-filters-modal {
+  padding-block: 0.5rem;
+  color: var(--text-normal);
+}
+
+.vc-voice-filters-voice-filter:not(.vc-voice-filters-voice-filter-available) img {
+  filter: brightness(0.5);
 }
