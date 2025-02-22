@@ -14,10 +14,16 @@ import { openCreateVoiceModal } from "./CreateVoiceFilterModal";
 import { openHelpModal } from "./HelpModal";
 import { DownloadIcon, DownloadingIcon, PauseIcon, PlayIcon, RefreshIcon, TrashIcon } from "./Icons";
 import { downloadCustomVoiceModel, getClient, IVoiceFilter, useVoiceFiltersStore, VoiceFilterStyles } from "./index";
+import { openSettingsModal } from "./SettingsModal";
 import { cl, useAudio } from "./utils";
 import { openWikiHomeModal } from "./WikiHomeModal";
 
 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+
+function openModelFolder() {
+    const { modulePath } = useVoiceFiltersStore.getState();
+    const modelFolder = Native.openFolder(modulePath);
+}
 
 export function openVoiceFiltersModal(): string {
     const key = openModal(modalProps => (
@@ -71,6 +77,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
                         <Button onClick={exportVoiceFilters} color={Button.Colors.TRANSPARENT}>Export</Button>
                         <Button onClick={importVoiceFilters} color={Button.Colors.TRANSPARENT}>Import</Button>
                         <Button onClick={() => downloadVoicepack("https://fox3000foxy.com/voicepacks/agents.json")} color={Button.Colors.TRANSPARENT}>Download Default</Button>
+                        <Button onClick={openModelFolder} color={Button.Colors.TRANSPARENT}>Open Model Folder</Button>
                     </Flex>
 
                     <Text>Voice filters list:</Text>
@@ -86,6 +93,7 @@ function VoiceFiltersModal({ modalProps, close, accept }: VoiceFiltersModalProps
             </ModalContent>
             <ModalFooter>
                 <Flex style={{ gap: "0.5rem" }} justify={Flex.Justify.END} align={Flex.Align.CENTER}>
+                    <Button color={Button.Colors.TRANSPARENT} onClick={openSettingsModal}>Settings</Button>
                     <Button color={Button.Colors.TRANSPARENT} onClick={openHelpModal}>Learn how to build your own voicepack</Button>
                     <Button color={Button.Colors.TRANSPARENT} onClick={() => openCreateVoiceModal()}>Create Voicepack</Button>
                     <Button color={Button.Colors.GREEN} onClick={openWikiHomeModal}>Wiki</Button>
