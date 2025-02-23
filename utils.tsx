@@ -5,6 +5,7 @@
  */
 
 import { classNameFactory } from "@api/Styles";
+import { closeModal, ModalProps, openModal } from "@utils/modal";
 import { useCallback, useEffect, useRef, useState } from "@webpack/common";
 
 export function downloadFile(name: string, data: string): void {
@@ -94,3 +95,40 @@ export function useAudio({ source, key = defaultKey }: UseAudioOptions = {}) {
 }
 
 export const cl = classNameFactory();
+
+// Since {...undefined} is the same as {...{}}, we can allow passing undefined when all props are optional
+type DefaultProps<T> = T extends { [K in keyof T]: T[K] | undefined } ? T | undefined : T;
+
+interface DefaultModalProps<T extends string> {
+    modalProps: ModalProps;
+    close: (result?: T) => void;
+}
+
+// Modal wrapper which adds an .open method along with a result state
+export function modal<TProps = {}, TResult extends string = string>(
+    Component: React.FC<TProps & DefaultModalProps<TResult>>
+): React.FC<TProps & DefaultModalProps<TResult>> & {
+    open: (props?: DefaultProps<TProps>, onClose?: (result: TResult) => void) => void;
+} {
+    function WrappedModal(props: TProps & DefaultModalProps<TResult>) {
+        return <Component {...props} />;
+    }
+
+    WrappedModal.open = (props?: DefaultProps<TProps>, onClose?: (result: TResult) => void) => {
+        const key = openModal(modalProps => (
+            <WrappedModal
+                modalProps={modalProps}
+                close={result => {
+                    result && onClose?.(result);
+                    closeModal(key);
+                }}
+                {...(props as TProps)}
+            />
+        ));
+    };
+
+    WrappedModal.displayName = Component.displayName || Component.name || "CustomModal";
+
+    return WrappedModal;
+}
+
