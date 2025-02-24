@@ -9,7 +9,6 @@ import { EventEmitter } from "events";
 import * as ort from "onnxruntime-node/lib";
 import { Readable, Writable } from "stream";
 
-
 interface RVCOptions {
     pitch?: number;
     resampleRate?: number;
@@ -67,16 +66,15 @@ class RVCProcessor extends EventEmitter {
     }
 
     private validatePitch(pitch: number): number {
-        if (pitch < -24 || pitch > 24) {
-            throw new Error("Pitch must be between -24 and 24 semitones");
+        if (pitch < -12 || pitch > 12) {
+            throw new Error("Pitch must be between -12 and 12 semitones");
         }
         return pitch;
     }
 
     private validateResampleRate(rate: number): number {
-        const validRates = [8000, 16000, 22050, 44100, 48000, 96000];
-        if (!validRates.includes(rate)) {
-            throw new Error(`Invalid resample rate. Valid rates are: ${validRates.join(", ")}`);
+        if (rate % 4000 !== 0 || rate < 0 || rate > 48000) {
+            throw new Error("Invalid resample rate. Must be a multiple of 4000 (e.g. 4000, 8000, 12000, 16000, 20000, 24000, 28000, 32000, 44100, 48000)");
         }
         return rate;
     }
@@ -153,8 +151,11 @@ class RVCProcessor extends EventEmitter {
 
         inputStream.pipe(ffmpegProcess.stdin);
 
+        // Handle ffmpeg output
         ffmpegProcess.stdout.on("data", (data: Buffer) => {
             outputStream.write(data);
+            // Optionally call onData if provided
+            // if (this.onData) this.onData(data);
         });
 
         ffmpegProcess.stdout.on("end", () => {
