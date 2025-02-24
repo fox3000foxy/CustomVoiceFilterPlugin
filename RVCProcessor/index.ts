@@ -22,11 +22,6 @@ interface ProcessingStats {
     processingTime: number;
 }
 
-interface ProcessingProgress {
-    bytesProcessed: number;
-    chunk: Buffer;
-}
-
 export interface IRVCProcessorOptions {
     inputStream: Readable;
     outputStream: Writable;
@@ -263,4 +258,5 @@ class RVCModelManager {
     }
 }
 
-export default RVCProcessor;
+export default RVCModelManager;
+export { RVCProcessor };

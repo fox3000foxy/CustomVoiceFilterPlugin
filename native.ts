@@ -7,6 +7,9 @@
 import { IpcMainInvokeEvent } from "electron";
 import { Readable, Writable } from "stream";
 
+import RVCModelManager, { IRVCProcessorOptions } from "./RVCProcessor";
+
+
 interface IVoiceFilter {
     name: string;
     author: string;
@@ -107,18 +110,16 @@ export async function getModelsList(_: IpcMainInvokeEvent, modulePath: string) {
 }
 
 // Todo: includes RVCProcessor
-import RVCProcessor, { IRVCProcessorOptions } from "./lib/RVCProcessor";
-
-export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCProcessorOptions): Promise<RVCProcessor> {
-    const rvcProcessor = new RVCProcessor(options);
-    await rvcProcessor.loadModel();
-    return rvcProcessor;
+export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCProcessorOptions): Promise<RVCModelManager> {
+    const rvcModelManager = new RVCModelManager(options);
+    await rvcModelManager.loadModel(options.modelPath);
+    return rvcModelManager;
 }
 
-export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcProcessor, audioStream, outputStream }: { rvcProcessor: RVCProcessor, audioStream: Readable, outputStream: Writable; }): Promise<void> {
-    await rvcProcessor.processStream(audioStream, outputStream);
+export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcModelManager, audioStream, outputStream }: { rvcModelManager: RVCModelManager, audioStream: Readable, outputStream: Writable; }): Promise<void> {
+    await rvcModelManager.processStream(audioStream, outputStream);
 }
 
-export async function unloadRVCModel(_: IpcMainInvokeEvent, rvcProcessor: RVCProcessor): Promise<void> {
-    await rvcProcessor.cleanup();
+export async function unloadRVCModel(_: IpcMainInvokeEvent, rvcModelManager: RVCModelManager): Promise<void> {
+    await rvcModelManager.cleanup();
 }

@@ -14,12 +14,11 @@ import { proxyLazy } from "@utils/lazy";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { filters, findAll, findByProps, findStore } from "@webpack";
 import { zustandCreate, zustandPersist } from "@webpack/common";
-import { Readable, Writable } from "stream";
 
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
 import { CustomVoiceFilterChatBarIcon } from "./Icons";
-import RVCProcessor, { IRVCProcessorOptions } from "./lib/RVCProcessor";
+import RVCModelManager, { IRVCProcessorOptions } from "./RVCProcessor";
 import { downloadFile } from "./utils";
 export let voices: Record<string, IVoiceFilter> | null = null;
 export let VoiceFilterStyles: any = null; // still 'skye'
@@ -61,7 +60,7 @@ function indexedDBStorageFactory<T>() {
 export interface CustomVoiceFilterStore {
     voiceFilters: IVoiceFilterMap;
     modulePath: string;
-    rvcProcessor: RVCProcessor | null;
+    rvcModelManager: RVCModelManager | null;
     set: (voiceFilters: IVoiceFilterMap) => void;
     updateById: (id: string) => void;
     deleteById: (id: string) => void;
@@ -70,14 +69,9 @@ export interface CustomVoiceFilterStore {
     exportIndividualVoice: (id: string) => void;
     importVoiceFilters: () => void;
     downloadVoicepack: (url: string) => void;
-    // downloadVoiceModel: (voiceFilter: IVoiceFilter) => Promise<{ success: boolean, voiceFilter: IVoiceFilter, path: string | null; }>;
-    // deleteVoiceModel: (voiceFilter: IVoiceFilter) => Promise<void>;
-    // deleteAllVoiceModels: () => Promise<void>;
-    // getVoiceModelState: (voiceFilter: IVoiceFilter) => Promise<{ status: string, downloadedBytes: number; }>;
     updateVoicesList: () => void;
-    createRVCProcessor: (options: IRVCProcessorOptions) => Promise<RVCProcessor>;
-    processAudioWithRVC: (rvcProcessor: RVCProcessor, audioStream: Readable, outputStream: Writable) => Promise<void>;
-    unloadRVCModel: (rvcProcessor: RVCProcessor) => Promise<void>;
+    createRVCManager: (options: IRVCProcessorOptions) => Promise<RVCModelManager>;
+    getRVCManager: () => RVCModelManager | null;
 }
 
 export interface ZustandStore<StoreType> {
@@ -91,7 +85,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
         (set: any, get: () => CustomVoiceFilterStore) => ({
             voiceFilters: {},
             modulePath: "",
-            rvcProcessor: null,
+            rvcModelManager: null,
             set: (voiceFilters: IVoiceFilterMap) => set({ voiceFilters }),
             updateById: (id: string) => {
                 console.warn("updating voice filter:", id);
@@ -211,24 +205,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                     });
                 }
             },
-            // downloadVoiceModel: async (voiceFilter: IVoiceFilter) => {
-            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-            //     return Native.downloadCustomVoiceFilter(DiscordNative.fileManager.getModulePath(), voiceFilter);
-            // },
-            // deleteVoiceModel: async (voiceFilter: IVoiceFilter) => {
-            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-            //     return Native.deleteModel(DiscordNative.fileManager.getModulePath(), voiceFilter.id);
-            // },
-            // deleteAllVoiceModels: async () => {
-            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-            //     return Native.deleteAllModels(DiscordNative.fileManager.getModulePath());
-            // },
-            // getVoiceModelState: async (voiceFilter: IVoiceFilter) => {
-            //     const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-            //     return Native.getModelState(voiceFilter.id, DiscordNative.fileManager.getModulePath());
-            // },
             updateVoicesList: async () => {
-                // Move the object declaration to a separate variable first
                 const voiceFilterState = {
                     "nativeVoiceFilterModuleState": "uninitialized",
                     "models": {} as Record<string, any>,
@@ -263,20 +240,13 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 VoiceFilterStore.getCatalogUpdateTime = () => voiceFilterState.catalogUpdateTime;
                 VoiceFilterStore.getLimitedTimeVoices = () => voiceFilterState.limitedTimeVoices;
             },
-            createRVCProcessor: async (options: IRVCProcessorOptions) => {
+            createRVCManager: async (options: IRVCProcessorOptions) => {
                 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-                return Native.createRVCProcessor(options);
+                const rvcModelManager = await Native.createRVCProcessor(options);
+                useVoiceFiltersStore.getState().rvcModelManager = rvcModelManager;
+                return rvcModelManager;
             },
-            processAudioWithRVC: async (rvcProcessor: RVCProcessor, audioStream: Readable, outputStream: Writable) => {
-                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-                return Native.processAudioWithRVC({
-                    rvcProcessor, audioStream, outputStream
-                });
-            },
-            unloadRVCModel: async (rvcProcessor: RVCProcessor) => {
-                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-                return Native.unloadRVCModel(rvcProcessor);
-            }
+            getRVCManager: () => useVoiceFiltersStore.getState().rvcModelManager
         } satisfies CustomVoiceFilterStore),
         {
             name: STORAGE_KEY,
