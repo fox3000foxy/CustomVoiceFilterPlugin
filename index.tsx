@@ -18,6 +18,7 @@ import { zustandCreate, zustandPersist } from "@webpack/common";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
 import { CustomVoiceFilterChatBarIcon } from "./Icons";
+import RVCProcessor, { IRVCProcessorOptions } from "./lib/RVCProcessor";
 import { downloadFile } from "./utils";
 export let voices: Record<string, IVoiceFilter> | null = null;
 export let VoiceFilterStyles: any = null; // still 'skye'
@@ -59,6 +60,7 @@ function indexedDBStorageFactory<T>() {
 export interface CustomVoiceFilterStore {
     voiceFilters: IVoiceFilterMap;
     modulePath: string;
+    rvcProcessor: RVCProcessor | null;
     set: (voiceFilters: IVoiceFilterMap) => void;
     updateById: (id: string) => void;
     deleteById: (id: string) => void;
@@ -72,6 +74,9 @@ export interface CustomVoiceFilterStore {
     // deleteAllVoiceModels: () => Promise<void>;
     // getVoiceModelState: (voiceFilter: IVoiceFilter) => Promise<{ status: string, downloadedBytes: number; }>;
     updateVoicesList: () => void;
+    createRVCProcessor: (options: IRVCProcessorOptions) => Promise<RVCProcessor>;
+    processAudioWithRVC: (rvcProcessor: RVCProcessor, audioBuffer: Float32Array) => Promise<Float32Array>;
+    unloadRVCModel: (rvcProcessor: RVCProcessor) => Promise<void>;
 }
 
 export interface ZustandStore<StoreType> {
@@ -85,6 +90,7 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
         (set: any, get: () => CustomVoiceFilterStore) => ({
             voiceFilters: {},
             modulePath: "",
+            rvcProcessor: null,
             set: (voiceFilters: IVoiceFilterMap) => set({ voiceFilters }),
             updateById: (id: string) => {
                 console.warn("updating voice filter:", id);
@@ -255,6 +261,18 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 VoiceFilterStore.getSortedVoiceFilters = () => voiceFilterState.sortedVoiceFilters.map(e => voiceFilterState.voiceFilters[e]);
                 VoiceFilterStore.getCatalogUpdateTime = () => voiceFilterState.catalogUpdateTime;
                 VoiceFilterStore.getLimitedTimeVoices = () => voiceFilterState.limitedTimeVoices;
+            },
+            createRVCProcessor: async (options: IRVCProcessorOptions) => {
+                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+                return Native.createRVCProcessor(options);
+            },
+            processAudioWithRVC: async (rvcProcessor: RVCProcessor, audioBuffer: Float32Array) => {
+                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+                return Native.processAudioWithRVC(rvcProcessor, audioBuffer);
+            },
+            unloadRVCModel: async (rvcProcessor: RVCProcessor) => {
+                const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
+                return Native.unloadRVCModel(rvcProcessor);
             }
         } satisfies CustomVoiceFilterStore),
         {

@@ -100,3 +100,25 @@ export async function openFolder(_: IpcMainInvokeEvent, modulePath: string) {
     const process = require("child_process");
     process.exec(`start "" "${modulePath}/discord_voice_filters/"`);
 }
+
+export async function getModelsList(_: IpcMainInvokeEvent, modulePath: string) {
+    const modelPath = modulePath + "/discord_voice_filters/";
+    return fs.readdirSync(modelPath).map(file => file.replace(".onnx", ""));
+}
+
+// Todo: includes RVCProcessor
+import RVCProcessor, { IRVCProcessorOptions } from "./lib/RVCProcessor";
+
+export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCProcessorOptions): Promise<RVCProcessor> {
+    const rvcProcessor = new RVCProcessor(options);
+    await rvcProcessor.loadModel();
+    return rvcProcessor;
+}
+
+export async function processAudioWithRVC(_: IpcMainInvokeEvent, rvcProcessor: RVCProcessor, audioBuffer: Float32Array): Promise<Float32Array> {
+    return await rvcProcessor.processAudio(audioBuffer);
+}
+
+export async function unloadRVCModel(_: IpcMainInvokeEvent, rvcProcessor: RVCProcessor): Promise<void> {
+    await rvcProcessor.cleanup();
+}

@@ -25,6 +25,11 @@ interface ProcessingStats {
     processingTime: number;
 }
 
+interface ProcessingProgress {
+    bytesProcessed: number;
+    chunk: Buffer;
+}
+
 export interface IRVCProcessorOptions {
     inputStream: Readable;
     outputStream: Writable;
@@ -48,16 +53,41 @@ class RVCProcessor extends EventEmitter {
 
     constructor(options: RVCOptions) {
         super();
+        if (!options.modelPath) {
+            throw new Error("Model path is required");
+        }
         this.modelPath = options.modelPath;
-        this.pitch = options.pitch ?? 0;
-        this.resampleRate = options.resampleRate ?? 48000;
-        this.bufferSize = options.bufferSize ?? 8192;
+        this.pitch = this.validatePitch(options.pitch ?? 0);
+        this.resampleRate = this.validateResampleRate(options.resampleRate ?? 48000);
+        this.bufferSize = this.validateBufferSize(options.bufferSize ?? 8192);
         this.session = null;
         this.stats = {
             inputSampleCount: 0,
             outputSampleCount: 0,
             processingTime: 0
         };
+    }
+
+    private validatePitch(pitch: number): number {
+        if (pitch < -24 || pitch > 24) {
+            throw new Error("Pitch must be between -24 and 24 semitones");
+        }
+        return pitch;
+    }
+
+    private validateResampleRate(rate: number): number {
+        const validRates = [8000, 16000, 22050, 44100, 48000, 96000];
+        if (!validRates.includes(rate)) {
+            throw new Error(`Invalid resample rate. Valid rates are: ${validRates.join(", ")}`);
+        }
+        return rate;
+    }
+
+    private validateBufferSize(size: number): number {
+        if (size < 256 || size > 16384) {
+            throw new Error("Buffer size must be between 256 and 16384");
+        }
+        return size;
     }
 
     async loadModel(): Promise<void> {
@@ -148,15 +178,39 @@ class RVCProcessor extends EventEmitter {
     }
 
     private normalizeAudio(buffer: Float32Array): Float32Array {
-        const maxValue = Math.max(...buffer.map(Math.abs));
+        // Remove DC offset
+        const sum = buffer.reduce((acc, val) => acc + val, 0);
+        const dcOffset = sum / buffer.length;
+        const dcRemoved = buffer.map(sample => sample - dcOffset);
+
+        // Normalize amplitude
+        const maxValue = Math.max(...dcRemoved.map(Math.abs));
         if (maxValue > 1.0) {
-            return buffer.map(sample => sample / maxValue);
+            return dcRemoved.map(sample => sample / maxValue);
         }
-        return buffer;
+        return dcRemoved;
     }
 
     getStats(): ProcessingStats {
         return { ...this.stats };
+    }
+
+    public async cleanup(): Promise<void> {
+        try {
+            await this.unloadModel();
+            this.removeAllListeners();
+            this.stats = {
+                inputSampleCount: 0,
+                outputSampleCount: 0,
+                processingTime: 0
+            };
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Cleanup failed: ${error.message}`);
+            } else {
+                throw new Error(`Cleanup failed: ${String(error)}`);
+            }
+        }
     }
 }
 
@@ -203,7 +257,17 @@ class RVCModelManager {
     getStats() {
         return this.rvcProcessor ? this.rvcProcessor.getStats() : null;
     }
-}
 
+    public async cleanup(): Promise<void> {
+        if (this.rvcProcessor) {
+            await this.rvcProcessor.cleanup();
+            this.rvcProcessor = null;
+        }
+    }
+
+    public isModelLoaded(): boolean {
+        return this.rvcProcessor?.session !== null;
+    }
+}
 
 export default RVCProcessor;
