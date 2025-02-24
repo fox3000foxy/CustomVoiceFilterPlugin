@@ -14,6 +14,7 @@ import { proxyLazy } from "@utils/lazy";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { filters, findAll, findByProps, findStore } from "@webpack";
 import { zustandCreate, zustandPersist } from "@webpack/common";
+import { Readable } from "stream";
 
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
@@ -75,7 +76,7 @@ export interface CustomVoiceFilterStore {
     // getVoiceModelState: (voiceFilter: IVoiceFilter) => Promise<{ status: string, downloadedBytes: number; }>;
     updateVoicesList: () => void;
     createRVCProcessor: (options: IRVCProcessorOptions) => Promise<RVCProcessor>;
-    processAudioWithRVC: (rvcProcessor: RVCProcessor, audioBuffer: Float32Array) => Promise<Float32Array>;
+    processAudioWithRVC: (rvcProcessor: RVCProcessor, audioBuffer: Readable, onData: (data: Buffer) => void, onEnd: () => void) => Promise<void>;
     unloadRVCModel: (rvcProcessor: RVCProcessor) => Promise<void>;
 }
 
@@ -266,9 +267,11 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
                 return Native.createRVCProcessor(options);
             },
-            processAudioWithRVC: async (rvcProcessor: RVCProcessor, audioBuffer: Float32Array) => {
+            processAudioWithRVC: async (rvcProcessor: RVCProcessor, audioBuffer: Readable, onData: (data: Buffer) => void, onEnd: () => void) => {
                 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-                return Native.processAudioWithRVC(rvcProcessor, audioBuffer);
+                return Native.processAudioWithRVC({
+                    rvcProcessor, audioBuffer, onData, onEnd
+                });
             },
             unloadRVCModel: async (rvcProcessor: RVCProcessor) => {
                 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
