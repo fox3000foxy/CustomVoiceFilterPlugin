@@ -7,7 +7,6 @@
 import { spawn } from "child_process";
 import { EventEmitter } from "events";
 import * as ort from "onnxruntime-node/lib";
-import { Readable, Writable } from "stream";
 
 interface RVCOptions {
     pitch?: number;
@@ -23,8 +22,8 @@ interface ProcessingStats {
 }
 
 export interface IRVCProcessorOptions {
-    inputStream: Readable;
-    outputStream: Writable;
+    inputStream: ReadableStream;
+    outputStream: WritableStream;
     modelPath: string;
     pitch: number;
     resampleRate: number;
@@ -132,8 +131,8 @@ class RVCProcessor extends EventEmitter {
     }
 
     processStream(
-        inputStream: Readable,
-        outputStream: Writable
+        inputStream: ReadableStream,
+        outputStream: WritableStream
     ): void {
         const pitchFactor = Math.pow(2, this.pitch / 12);
         const ffmpegProcess = spawn("ffmpeg", [
@@ -144,17 +143,16 @@ class RVCProcessor extends EventEmitter {
             "pipe:1"
         ]);
 
-        inputStream.pipe(ffmpegProcess.stdin);
+        // Convert Web streams to Node streams
+        const { Readable, Writable } = require("stream");
+        const nodeReadable = Readable.fromWeb(inputStream);
+        const nodeWritable = Writable.fromWeb(outputStream);
 
-        // Handle ffmpeg output
-        ffmpegProcess.stdout.on("data", (data: Buffer) => {
-            outputStream.write(data);
-            // Optionally call onData if provided
-            // if (this.onData) this.onData(data);
-        });
+        nodeReadable.pipe(ffmpegProcess.stdin);
+        ffmpegProcess.stdout.pipe(nodeWritable);
 
         ffmpegProcess.stdout.on("end", () => {
-            outputStream.end();
+            outputStream.close();
             this.emit("processingComplete", this.stats);
         });
 
@@ -236,7 +234,7 @@ class RVCModelManager {
         }
     }
 
-    processStream(inputStream: Readable, outputStream: Writable) {
+    processStream(inputStream: ReadableStream, outputStream: WritableStream) {
         if (this.rvcProcessor) {
             this.rvcProcessor.processStream(inputStream, outputStream);
         }

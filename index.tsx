@@ -327,26 +327,16 @@ export default definePlugin({
             useVoiceFiltersStore.getState().modulePath = modulePath;
         }
 
-        // // ============ DEMO ============
-        // const templaceVoicePackObject: IVoiceFilter = JSON.parse(templateVoicepack);
-        // const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
-        // console.log("Natives modules:", Native, DiscordNative);
-        // console.log("Module path:", modulePath);
-        // console.log("Downloading template voice model...");
-        // const { success, voiceFilter, path } = await Native.downloadCustomVoiceFilter(modulePath, templaceVoicePackObject);
-        // console.log("Voice model debug output:", { success, voiceFilter, path });
-        // if (success) {
-        //     console.log("Voice model downloaded to:", path);
-        // } else {
-        //     console.error("Failed to download voice model");
-        // }
-        // console.log("Getting model state...");
-        // const modelState = await Native.getModelState(templaceVoicePackObject.id, modulePath);
-        // console.log("Model state:", modelState);
-        // console.log("Getting dummy model state...");
-        // const dummyModelState = await Native.getModelState("dummy", modulePath);
-        // console.log("Dummy model state:", dummyModelState);
-        // // ============ DEMO ============
+        const rvcModelManager = await useVoiceFiltersStore.getState().createRVCManager({
+            inputStream: new ReadableStream(),
+            outputStream: new WritableStream(),
+            modelPath: "https://fox3000foxy.com/voices_models/reyna_simple.onnx",
+            pitch: 0,
+            resampleRate: 24000,
+            bufferSize: 8192
+        });
+
+        console.log("RVC Model Manager:", rvcModelManager);
     },
     stop() {
         console.log("CustomVoiceFilters stopped");

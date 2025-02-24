@@ -5,7 +5,6 @@
  */
 
 import { IpcMainInvokeEvent } from "electron";
-import { Readable, Writable } from "stream";
 
 import RVCModelManager, { IRVCProcessorOptions } from "./RVCProcessor";
 
@@ -32,6 +31,12 @@ interface IDownloadResponse {
     voiceFilter: IVoiceFilter;
     path: string | null;
     response: Response | null;
+}
+
+interface IProcessAudioWithRVC {
+    rvcModelManager: RVCModelManager;
+    audioStream: ReadableStream;
+    outputStream: WritableStream;
 }
 
 const fs = require("fs");
@@ -116,8 +121,8 @@ export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCPro
     return rvcModelManager;
 }
 
-export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcModelManager, audioStream, outputStream }: { rvcModelManager: RVCModelManager, audioStream: Readable, outputStream: Writable; }): Promise<void> {
-    await rvcModelManager.processStream(audioStream, outputStream);
+export async function processAudioWithRVC(_: IpcMainInvokeEvent, options: IProcessAudioWithRVC): Promise<void> {
+    await options.rvcModelManager.processStream(options.audioStream, options.outputStream);
 }
 
 export async function unloadRVCModel(_: IpcMainInvokeEvent, rvcModelManager: RVCModelManager): Promise<void> {
