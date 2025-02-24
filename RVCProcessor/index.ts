@@ -7,7 +7,7 @@
 import { EventEmitter } from "events";
 import ffmpegStatic from "ffmpeg-static";
 import ffmpeg from "fluent-ffmpeg";
-import * as ort from "onnxruntime-node/lib/index";
+import * as ort from "onnxruntime-node/lib";
 import { Readable, Writable } from "stream";
 
 ffmpeg.setFfmpegPath(ffmpegStatic!);
