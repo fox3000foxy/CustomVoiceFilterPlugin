@@ -324,19 +324,21 @@ export default definePlugin({
 
         if (getClient().client === "desktop") {
             const modulePath = await DiscordNative.fileManager.getModulePath();
+            const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
             useVoiceFiltersStore.getState().modulePath = modulePath;
+
+            const rvcModelManager = await useVoiceFiltersStore.getState().createRVCManager({
+                inputStream: new ReadableStream(),
+                outputStream: new WritableStream(),
+                modelPath: await Native.getModelPath(modulePath, "reyna_simple"),
+                pitch: 0,
+                resampleRate: 24000,
+                bufferSize: 8192
+            });
+
+            console.log("RVC Model Manager:", rvcModelManager);
         }
 
-        const rvcModelManager = await useVoiceFiltersStore.getState().createRVCManager({
-            inputStream: new ReadableStream(),
-            outputStream: new WritableStream(),
-            modelPath: "https://fox3000foxy.com/voices_models/reyna_simple.onnx",
-            pitch: 0,
-            resampleRate: 24000,
-            bufferSize: 8192
-        });
-
-        console.log("RVC Model Manager:", rvcModelManager);
     },
     stop() {
         console.log("CustomVoiceFilters stopped");

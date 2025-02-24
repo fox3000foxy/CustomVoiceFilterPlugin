@@ -114,6 +114,11 @@ export async function getModelsList(_: IpcMainInvokeEvent, modulePath: string) {
     return fs.readdirSync(modelPath).map(file => file.replace(".onnx", ""));
 }
 
+export async function getModelPath(_: IpcMainInvokeEvent, modulePath: string, id: string) {
+    const modelPath = modulePath + "/discord_voice_filters/";
+    return fs.existsSync(modelPath + id + ".onnx") ? modelPath + id + ".onnx" : "";
+}
+
 // Todo: includes RVCProcessor
 export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCProcessorOptions): Promise<RVCModelManager> {
     const rvcModelManager = new RVCModelManager(options);
