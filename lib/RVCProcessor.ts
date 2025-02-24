@@ -6,7 +6,7 @@
 
 import { EventEmitter } from "events";
 import ffmpegStatic from "ffmpeg-static";
-import * as ffmpeg from "fluent-ffmpeg";
+import ffmpeg from "fluent-ffmpeg";
 import * as ort from "onnxruntime-node/lib/index";
 import { Readable, Writable } from "stream";
 
@@ -142,13 +142,14 @@ class RVCProcessor extends EventEmitter {
 
     processStream(
         inputStream: Readable,
-        onData?: (data: Buffer) => void,
-        onEnd?: () => void
+        outputStream: Writable,
+        // onData?: (data: Buffer) => void,
+        // onEnd?: () => void
     ): void {
         const pitchFactor = Math.pow(2, this.pitch / 12);
-        let totalProcessed = 0;
+        const totalProcessed = 0;
 
-        const ffmpegProcess = ffmpeg()
+        const ffmpegProcess: ffmpeg.FfmpegCommand = ffmpeg()
             .input(inputStream)
             .inputFormat("f32le")
             .audioFrequency(this.resampleRate)
@@ -159,22 +160,22 @@ class RVCProcessor extends EventEmitter {
             ])
             .format("f32le")
             .on("start", () => this.emit("processingStart"))
-            .on("data", (chunk: Buffer) => {
-                totalProcessed += chunk.length;
-                this.emit("progress", {
-                    bytesProcessed: totalProcessed,
-                    chunk: chunk
-                });
-                if (onData) onData(chunk);
-            })
-            .on("end", () => {
-                this.emit("processingComplete", this.stats);
-                if (onEnd) onEnd();
-            })
-            .on("error", error => this.emit("error", error));
+            // .on("data", (chunk: Buffer) => {
+            //     totalProcessed += chunk.length;
+            //     this.emit("progress", {
+            //         bytesProcessed: totalProcessed,
+            //         chunk: chunk
+            //     });
+            //     if (onData) onData(chunk);
+            // })
+            // .on("end", () => {
+            //     this.emit("processingComplete", this.stats);
+            //     if (onEnd) onEnd();
+            // })
+            .on("error", (error: Error) => this.emit("error", error));
 
         // Enable stream buffering
-        ffmpegProcess.pipe(null, { end: true });
+        ffmpegProcess.pipe(outputStream, { end: true });
     }
 
     private normalizeAudio(buffer: Float32Array): Float32Array {
@@ -248,9 +249,9 @@ class RVCModelManager {
         }
     }
 
-    processStream(inputStream: Readable, onData?: (data: Buffer) => void, onEnd?: () => void) {
+    processStream(inputStream: Readable, outputStream: Writable) {
         if (this.rvcProcessor) {
-            this.rvcProcessor.processStream(inputStream, onData, onEnd);
+            this.rvcProcessor.processStream(inputStream, outputStream);
         }
     }
 

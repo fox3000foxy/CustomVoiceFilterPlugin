@@ -5,7 +5,7 @@
  */
 
 import { IpcMainInvokeEvent } from "electron";
-import { Readable } from "stream";
+import { Readable, Writable } from "stream";
 
 interface IVoiceFilter {
     name: string;
@@ -115,8 +115,8 @@ export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCPro
     return rvcProcessor;
 }
 
-export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcProcessor, audioStream, onData, onEnd }: { rvcProcessor: RVCProcessor, audioStream: Readable, onData: (data: Buffer) => void, onEnd: () => void; }): Promise<void> {
-    await rvcProcessor.processStream(audioStream, onData, onEnd);
+export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcProcessor, audioStream, outputStream }: { rvcProcessor: RVCProcessor, audioStream: Readable, outputStream: Writable; }): Promise<void> {
+    await rvcProcessor.processStream(audioStream, outputStream);
 }
 
 export async function unloadRVCModel(_: IpcMainInvokeEvent, rvcProcessor: RVCProcessor): Promise<void> {

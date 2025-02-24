@@ -14,7 +14,7 @@ import { proxyLazy } from "@utils/lazy";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { filters, findAll, findByProps, findStore } from "@webpack";
 import { zustandCreate, zustandPersist } from "@webpack/common";
-import { Readable } from "stream";
+import { Readable, Writable } from "stream";
 
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
@@ -76,7 +76,7 @@ export interface CustomVoiceFilterStore {
     // getVoiceModelState: (voiceFilter: IVoiceFilter) => Promise<{ status: string, downloadedBytes: number; }>;
     updateVoicesList: () => void;
     createRVCProcessor: (options: IRVCProcessorOptions) => Promise<RVCProcessor>;
-    processAudioWithRVC: (rvcProcessor: RVCProcessor, audioStream: Readable, onData: (data: Buffer) => void, onEnd: () => void) => Promise<void>;
+    processAudioWithRVC: (rvcProcessor: RVCProcessor, audioStream: Readable, outputStream: Writable) => Promise<void>;
     unloadRVCModel: (rvcProcessor: RVCProcessor) => Promise<void>;
 }
 
@@ -267,10 +267,10 @@ export const useVoiceFiltersStore: ZustandStore<CustomVoiceFilterStore> = proxyL
                 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
                 return Native.createRVCProcessor(options);
             },
-            processAudioWithRVC: async (rvcProcessor: RVCProcessor, audioStream: Readable, onData: (data: Buffer) => void, onEnd: () => void) => {
+            processAudioWithRVC: async (rvcProcessor: RVCProcessor, audioStream: Readable, outputStream: Writable) => {
                 const Native = VencordNative.pluginHelpers.CustomVoiceFilters as PluginNative<typeof import("./native")>;
                 return Native.processAudioWithRVC({
-                    rvcProcessor, audioStream, onData, onEnd
+                    rvcProcessor, audioStream, outputStream
                 });
             },
             unloadRVCModel: async (rvcProcessor: RVCProcessor) => {
