@@ -4,13 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { spawn } from "child_process";
 import { EventEmitter } from "events";
-import ffmpegStatic from "ffmpeg-static";
-import ffmpeg from "fluent-ffmpeg";
 import * as ort from "onnxruntime-node/lib";
 import { Readable, Writable } from "stream";
 
-ffmpeg.setFfmpegPath(ffmpegStatic!);
 
 interface RVCOptions {
     pitch?: number;
@@ -142,40 +140,33 @@ class RVCProcessor extends EventEmitter {
 
     processStream(
         inputStream: Readable,
-        outputStream: Writable,
-        // onData?: (data: Buffer) => void,
-        // onEnd?: () => void
+        outputStream: Writable
     ): void {
         const pitchFactor = Math.pow(2, this.pitch / 12);
-        const totalProcessed = 0;
+        const ffmpegProcess = spawn("ffmpeg", [
+            "-i", "pipe:0",
+            "-f", "f32le",
+            "-ar", String(this.resampleRate),
+            "-af", `asetrate=${this.resampleRate},atempo=${pitchFactor},aresample=async=1000`,
+            "pipe:1"
+        ]);
 
-        const ffmpegProcess: ffmpeg.FfmpegCommand = ffmpeg()
-            .input(inputStream)
-            .inputFormat("f32le")
-            .audioFrequency(this.resampleRate)
-            .audioFilters([
-                `asetrate=${this.resampleRate}`,
-                `atempo=${pitchFactor}`,
-                "aresample=async=1000" // Better handling of async stream
-            ])
-            .format("f32le")
-            .on("start", () => this.emit("processingStart"))
-            // .on("data", (chunk: Buffer) => {
-            //     totalProcessed += chunk.length;
-            //     this.emit("progress", {
-            //         bytesProcessed: totalProcessed,
-            //         chunk: chunk
-            //     });
-            //     if (onData) onData(chunk);
-            // })
-            // .on("end", () => {
-            //     this.emit("processingComplete", this.stats);
-            //     if (onEnd) onEnd();
-            // })
-            .on("error", (error: Error) => this.emit("error", error));
+        inputStream.pipe(ffmpegProcess.stdin);
 
-        // Enable stream buffering
-        ffmpegProcess.pipe(outputStream, { end: true });
+        ffmpegProcess.stdout.on("data", (data: Buffer) => {
+            outputStream.write(data);
+        });
+
+        ffmpegProcess.stdout.on("end", () => {
+            outputStream.end();
+            this.emit("processingComplete", this.stats);
+        });
+
+        ffmpegProcess.on("start", () => this.emit("processingStart"));
+        ffmpegProcess.on("error", (error: Error) => this.emit("error", error));
+        ffmpegProcess.on("close", () => {
+            this.emit("processingComplete", this.stats);
+        });
     }
 
     private normalizeAudio(buffer: Float32Array): Float32Array {
