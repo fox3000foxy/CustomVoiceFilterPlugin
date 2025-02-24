@@ -115,8 +115,8 @@ export async function createRVCProcessor(_: IpcMainInvokeEvent, options: IRVCPro
     return rvcProcessor;
 }
 
-export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcProcessor, audioBuffer, onData, onEnd }: { rvcProcessor: RVCProcessor, audioBuffer: Readable, onData: (data: Buffer) => void, onEnd: () => void; }): Promise<void> {
-    await rvcProcessor.processStream(audioBuffer, onData, onEnd);
+export async function processAudioWithRVC(_: IpcMainInvokeEvent, { rvcProcessor, audioStream, onData, onEnd }: { rvcProcessor: RVCProcessor, audioStream: Readable, onData: (data: Buffer) => void, onEnd: () => void; }): Promise<void> {
+    await rvcProcessor.processStream(audioStream, onData, onEnd);
 }
 
 export async function unloadRVCModel(_: IpcMainInvokeEvent, rvcProcessor: RVCProcessor): Promise<void> {
