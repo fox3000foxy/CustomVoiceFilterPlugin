@@ -4,33 +4,23 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import * as tf from "@tensorflow/tfjs"; // Import TensorFlow.js
 import { spawn } from "child_process";
 import { EventEmitter } from "events";
-import * as ort from "onnxruntime-web";
 
+import { IRVCProcessorOptions } from "./interfaces";
 
 interface RVCOptions {
     pitch?: number;
     resampleRate?: number;
     bufferSize?: number;
-    modelPath: string;
+    modelPath: string; // Path to the .pth model
 }
 
 interface ProcessingStats {
     inputSampleCount: number;
     outputSampleCount: number;
     processingTime: number;
-}
-
-export interface IRVCProcessorOptions {
-    inputStream: ReadableStream;
-    outputStream: WritableStream;
-    modelPath: string;
-    pitch: number;
-    resampleRate: number;
-    bufferSize: number;
-    onData?: (data: Buffer) => void;
-    onEnd?: () => void;
 }
 
 const rvcProcessor: RVCProcessor | null = null;
@@ -40,7 +30,7 @@ class RVCProcessor extends EventEmitter {
     public pitch: number;
     public resampleRate: number;
     public bufferSize: number;
-    public session: ort.InferenceSession | null;
+    public model: tf.LayersModel | null; // Change to TensorFlow.js model
     public stats: ProcessingStats;
 
     constructor(options: RVCOptions) {
@@ -52,7 +42,7 @@ class RVCProcessor extends EventEmitter {
         this.pitch = this.validatePitch(options.pitch ?? 0);
         this.resampleRate = this.validateResampleRate(options.resampleRate ?? 48000);
         this.bufferSize = this.validateBufferSize(options.bufferSize ?? 8192);
-        this.session = null;
+        this.model = null;
         this.stats = {
             inputSampleCount: 0,
             outputSampleCount: 0,
@@ -83,10 +73,7 @@ class RVCProcessor extends EventEmitter {
 
     async loadModel(): Promise<void> {
         try {
-            this.session = await ort.InferenceSession.create(this.modelPath, {
-                executionProviders: ["CUDAExecutionProvider", "CPUExecutionProvider"],
-                graphOptimizationLevel: "all"
-            });
+            this.model = await tf.loadLayersModel(this.modelPath); // Load the model using TensorFlow.js
             this.emit("modelLoaded");
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -100,26 +87,27 @@ class RVCProcessor extends EventEmitter {
     }
 
     async unloadModel(): Promise<void> {
-        if (this.session) {
-            await this.session.endProfiling();
-            this.session = null;
+        if (this.model) {
+            this.model.dispose(); // Dispose of the TensorFlow.js model
+            this.model = null;
         }
     }
 
     async processAudio(audioBuffer: Float32Array): Promise<Float32Array> {
-        if (!this.session) throw new Error("Model not loaded");
+        if (!this.model) throw new Error("Model not loaded");
 
         const startTime = performance.now();
         try {
             const normalizedBuffer = this.normalizeAudio(audioBuffer);
-            const tensor = new ort.Tensor("float32", normalizedBuffer, [1, normalizedBuffer.length]);
-            const results = await this.session.run({ input: tensor });
+
+            const inputTensor = tf.tensor(normalizedBuffer, [1, normalizedBuffer.length]); // Create a tensor from the audio buffer
+            const results = this.model.predict(inputTensor) as tf.Tensor; // Run inference
 
             this.stats.inputSampleCount += audioBuffer.length;
-            this.stats.outputSampleCount += (results.output.data as Float32Array).length;
+            this.stats.outputSampleCount += results?.shape[1] ?? 0; // Update output sample count
             this.stats.processingTime += performance.now() - startTime;
 
-            return results.output.data as Float32Array;
+            return results.dataSync() as Float32Array; // Return the output as Float32Array
         } catch (error: unknown) {
             if (error instanceof Error) {
                 this.emit("error", new Error(`Audio processing error: ${error.message}`));
@@ -253,7 +241,7 @@ class RVCModelManager {
     }
 
     public isModelLoaded(): boolean {
-        return this.rvcProcessor?.session !== null;
+        return this.rvcProcessor?.model !== null;
     }
 }
 
